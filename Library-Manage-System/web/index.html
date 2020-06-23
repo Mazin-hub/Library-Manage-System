@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>系统界面</title>
+    <!-- 1. 导入CSS的全局样式 -->
+    <link href="./css/bootstrap.min.css" rel="stylesheet">
+    <link href="./css/background.css" rel="stylesheet">
+    <!-- 2. jQuery导入，建议使用1.9以上的版本 -->
+    <script src="js/jquery-3.3.1.js"></script>
+    <!-- 3. 导入bootstrap的js文件 -->
+    <script src="./js/bootstrap.min.js"></script>
+    <script src="js/index.js"></script>
+    <script type="text/javascript"></script>
+</head>
+<body>
+<div class="size">图书管理系统</div>
+<a class="login" href="javascript:;" onclick=login()>立即登录</a>
+
+<div class="solid">
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs ul-background" role="tablist">
+        <li role="presentation" class="active li-length text-align"><a href="#search" role="tab" data-toggle="tab">图书检索</a></li>
+        <li role="presentation" class="li-length text-align"><a href="#borrow" role="tab" data-toggle="tab">我的借阅</a></li>
+        <li role="presentation" class="li-length text-align"><a href="#manage" role="tab" data-toggle="tab" onclick=lock()>图书管理</a></li>
+        <li role="presentation" class="li-length text-align"><a href="#MyBook" role="tab" data-toggle="tab">我的图书</a></li>
+        <li role="presentation" class="li-length text-align"><a href="#contact" role="tab" data-toggle="tab">联系管理员</a></li>
+    </ul>
+
+    <!-- Tab panes -->
+    <div class="tab-content">
+
+        <div role="tabpanel" class="tab-pane active" id="search">
+
+            <div class="row juli">
+                <div class="col-lg-1">
+                    <label class="font vertical">书名：</label>
+                </div>
+                <div class="col-lg-3">
+                    <input type="text" class="form-control" id="bookName">
+                </div>
+                <div class="col-lg-1">
+                    <label class="font vertical">作者：</label>
+                </div>
+                <div class="col-lg-3">
+                    <input type="text" class="form-control" id="bookAuthor">
+                </div>
+                <div class="col-lg-1">
+                    <label class="font vertical">分类：</label>
+                </div>
+                <div class="col-lg-3">
+                    <select name="select" class="form-control" id="genre">
+                        <option>请选择</option>
+                        <option>科学</option>
+                        <option>人文</option>
+                        <option>推理</option>
+                        <option>恐怖</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row juli">
+                <div class="col-lg-1">
+                    <label class="font vertical">日期：</label>
+                </div>
+                <div class="col-lg-3">
+                    <input type="text" class="form-control" id="publish">
+                </div>
+                <div class="col-lg-1">
+                    <input class="btn btn-primary" type="button" value="查询" onclick=search()>
+                </div>
+            </div>
+
+            <div class="search-hide hide">
+                 <!--搜索结果表格,一开始默认隐藏，搜索完就显示-->
+                <div class="juli">
+                    <div>
+                        <table id="search-table" border="1" class="table table-bordered table-hover text-align">
+                            <tr>
+                                <th class="text-align">书名</th>
+                                <th class="text-align">作者</th>
+                                <th class="text-align">类别</th>
+                                <th class="text-align">日期</th>
+                            </tr>
+                            <tr>
+                                <td><a href="javascript:;" data-toggle="modal" data-target="#detial" onclick=detial(this)>爱的教育</a></td>
+                                <td>?</td>
+                                <td>?</td>
+                                <td>?</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <!--页码,跟表格一起一开始隐藏-->
+                <nav aria-label="Page navigation" class="text-align">
+                    <ul class="pagination">
+                        <li>
+                            <a href="javascript:;" aria-label="Previous" onclick=previous()>
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        <ul class='pagination' id="li"></ul>
+                        <li>
+                            <a href="javascript:;" aria-label="Next" onclick=next()>
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+
+        </div>
+
+        <div role="tabpanel" class="tab-pane" id="borrow">
+            <div class="alert alert-warning red-font juli">请注意书籍归还日期，截止归还日期未归还书籍将被划入黑名单!</div>
+            <div class="juli">
+                <!--默认隐藏-->
+                <table id="borrow-table" border="1" class="table table-bordered table-hover text-align">
+                    <tr>
+                        <th class="text-align">书名</th>
+                        <th class="text-align">作者</th>
+                        <th class="text-align">类别</th>
+                        <th class="text-align">借阅日期</th>
+                        <th class="text-align">归还日期</th>
+                        <th class="text-align">状态</th>
+                    </tr>
+                    <tr>
+                        <td><a href="javascript:;" data-toggle="modal" data-target="#detial" onclick=detial(this)>爱的教育</a></td>
+                        <td>?</td>
+                        <td>?</td>
+                        <td>?</td>
+                        <td>?</td>
+                        <td><a href="javascript:;" data-toggle="modal" data-target="#delay-return">延期归还</a></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div role="tabpanel" class="tab-pane" id="manage">
+
+            <br><br><br>
+            <!--第一层锁-->
+            <div class="first-lock row">
+                <div class="col-lg-4"></div>
+                <div class="col-lg-3">
+                    <div class="input-group">
+                        <span class="input-group-addon">🔒</span>
+                        <input style="width: 200px" class="flock form-control" type="text" placeholder="输入二级密码" aria-describedby="basic-addon1">
+                    </div>
+                </div>
+                <div class="col-lg-1">
+                    <input class="btn" type="button" value="确认" onclick=manage_first_lock()>
+                </div>
+            </div>
+            <!--第二层锁-->
+            <div class="lock text-align hide">
+                <div class="col-lg-2"></div>
+                <div class="col-lg-6">
+                    <div class="input-group">
+                        <span class="input-group-addon">👦</span>
+                        <input style="width: 200px" class="luser form-control" type="text" placeholder="输入用户名" aria-describedby="basic-addon1">
+                        <span class="input-group-addon">🔑</span>
+                        <input style="width: 200px" class="lword form-control" type="password" placeholder="输入密码" aria-describedby="basic-addon1">
+                    </div>
+                </div>
+                <div class="col-lg-1">
+                    <input class="btn btn-default" type="button" value="确认" onclick=lock()>
+                </div>
+            </div>
+            <!--真实管理界面-->
+            <div class="manage-row row hide">
+                <div class="col-lg-2 mana-list">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li class="li-manage"><a class="list-color" href="#books" role="tab" data-toggle="tab">图书</a></li>
+                        <li class="li-manage"><a class="list-color" href="#delay" role="tab" data-toggle="tab">延期归还</a></li>
+                        <li class="li-manage"><a class="list-color" href="#information" role="tab" data-toggle="tab">消息处理</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-10">
+                    <div class="tab-content">
+                        <div role="tabpanel" class="tab-pane active" id="books">
+                            <table border="1" class="table table-bordered table-hover text-align">
+                                <tr>
+                                    <th class="text-align">书名</th>
+                                    <th class="text-align">作者</th>
+                                    <th class="text-align">类别</th>
+                                    <th class="text-align">借阅日期</th>
+                                    <th class="text-align">归还日期</th>
+                                    <th class="text-align">状态</th>
+                                </tr>
+                                <tr>
+                                    <td><a href="javascript:;" data-toggle="modal" data-target="#detial" onclick=detial(this)>爱的教育</a></td>
+                                    <td>?</td>
+                                    <td>?</td>
+                                    <td>?</td>
+                                    <td>?</td>
+                                    <td><a href="javascript:;" data-toggle="modal" data-target="#delay-return">延期归还</a></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div role="tabpanel" class="tab-pane" id="delay">
+                            ...
+                        </div>
+                        <div role="tabpanel" class="tab-pane" id="information">
+                            ...
+                        </div>
+                    </div>
+                </div>
+            </div> <!-- row -->
+
+        </div>
+
+        <div role="tabpanel" class="tab-pane" id="MyBook">
+            <div id="NoBook" class="alert alert-success font juli" style="color: #31b0d5;">目前图书馆暂无您的书籍,快去分享给别人吧!</div>
+
+            <!--查询数据库，如果有数据就把这部分的hide去掉-->
+            <div class="juli hide" id="upload-table">
+                <div>
+                    <table border="1" class="table table-bordered table-hover text-align">
+                        <tr>
+                            <th class="text-align">书名</th>
+                            <th class="text-align">作者</th>
+                            <th class="text-align">类别</th>
+                            <th class="text-align">提交日期</th>
+                            <th class="text-align">书号id</th>
+                            <th class="text-align">状态</th>
+                        </tr>
+                        <tr>
+                            <td>?</td>
+                            <td>?</td>
+                            <td>?</td>
+                            <td>?</td>
+                            <td>?</td>
+                            <td><a href="javascript:;" data-toggle="modal" data-target="#book-condition">可查看状态，并且撤回书籍</a></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-5"></div>
+                <div class="col-lg-4">
+                    <button type="button" class="btn btn-primary btn-lg juli" data-toggle="modal" data-target="#upload">
+                    分享我的书籍
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <div role="tabpanel" class="tab-pane" id="contact">
+            <div class="alert alert-success font juli" style="color: #449d44">有任何问题都可以向管理员提噢！</div>
+            <div class="text-align">
+                <textarea name="contact" rows="10" class="form-control"></textarea><br>
+                <input type="button" class="btn btn-lg bn" value="提交信息" onclick=submit_contact(this)>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- detial-Modal -->
+    <div class="modal fade" id="detial" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="detial-book">id：detial-book</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-lg-6 text-align">
+                            <img src="./images/1590053103(1).jpg" alt="图书照片">
+                        </div>
+                        <div class="col-lg-6 font">
+                            <!--class=value 用来赋值,不做css-->
+                            <span>书名:</span>&emsp;<span class="value">值1</span><br>
+                            <span>作者:</span>&emsp;<span class="value">值2</span><br>
+                            <span>类别:</span>&emsp;<span class="value">值3</span><br>
+                            <span>出版日期:</span>&emsp;<span class="value">值4</span><br>
+                            <span>提供人:</span>&emsp;<span class="value">值5</span><br>
+                            <span>评分:</span>&emsp;<span class="rate value">5.0</span><br>
+                            <span>总库存:</span>&emsp;<span class="value">值6</span><br>
+                            <span>现库存:</span>&emsp;<span class="value">值7</span><br>
+                            <!--<input type="button" class="btn btn-success" value="借阅" data-toggle="modal" data-target="#confirm-borrow">-->
+                        </div>
+                    </div>  <!-- row -->
+                </div>   <!-- modal-body -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" data-toggle="modal" data-target="#confirm-borrow">借阅</button>
+                    <button type="button" class="btn btn-default detial-close" data-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- confirm-Modal -->
+    <div class="modal fade" id="confirm-borrow" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="confirm-book">书名（id：confirm-book）</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-lg-6 text-align">
+                            <img src="./images/1590053103(1).jpg" alt="图书照片">
+                        </div>
+                        <div class="col-lg-6 font">
+                            <!--class=value 用来赋值,不做css-->
+                            <span>书名:</span>&emsp;<span class="value">值1</span><br>
+                            <span>作者:</span>&emsp;<span class="value">值2</span><br>
+                            <span>类别:</span>&emsp;<span class="value">值3</span><br>
+                            <span>提供人:</span>&emsp;<span class="value">值4</span><br>
+                            <span>评分:</span>&emsp;<span class="rate value">5.0</span><br>
+                            <span>借阅日期:</span>&emsp;<span class="value"></span><br>
+                            <span>归还日期:</span>&emsp;<span class="value"></span><br>
+                        </div>
+                    </div>  <!-- row -->
+                </div>   <!-- modal-body -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onclick=confirm_borrow()>确认借阅</button>
+                    <button type="button" class="btn btn-default confirm-close" data-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- delay-Modal -->
+    <div class="modal fade" id="delay-return" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="borrow-book">id：borrow-book</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-lg-4 text-align">
+                            <img src="./images/1590053103(1).jpg" alt="图书照片">
+                        </div>
+                        <div class="col-lg-8 font">
+                            <!--class=value 用来赋值,不做css-->
+                            <span>书名:</span>&emsp;<span class="value">值1</span><br>
+                            <span>作者:</span>&emsp;<span class="value">值2</span><br>
+                            <span>类别:</span>&emsp;<span class="value">值3</span><br>
+                            <span>提供人:</span>&emsp;<span class="value">值4</span><br>
+                            <span>评分:</span>&emsp;<span class="rate value">5.0</span><br>
+                            <span>原归还日期:</span>&emsp;<span class="value"></span><br>
+                            <div>延后归还日期:</div><span class="red-font">(注：一次最多延期7天，最多延期2次)</span><input class="form-control value" type="date"><br>
+                        </div>
+                    </div>  <!-- row -->
+                </div>   <!-- modal-body -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default delay-close" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" onclick=delay()>提交延期申请</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- upload-Modal -->
+    <div class="modal fade" id="upload" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="upload-book">id：upload-book</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-lg-4 text-align">
+                            <img src="./images/1590053103(1).jpg" alt="图书照片">
+                        </div>
+                        <div class="col-lg-8 font">
+                            <label>书名:</label><input class="form-control" type="text" name="bookName">
+                            <label>作者:</label><input class="form-control" type="text" name="bookAuthor">
+                            <label>类别:</label>
+                            <select name="genre" class="form-control">
+                                <option>请选择</option>
+                                <option>科学</option>
+                                <option>人文</option>
+                                <option>推理</option>
+                                <option>恐怖</option>
+                            </select>
+                            <label>出版日期:</label><input class="form-control" type="text" name="publish">
+                            <label>提供人:</label><input class="form-control" type="text" name="provider">
+                        </div>
+                    </div>  <!-- row -->
+                </div>   <!-- modal-body -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onclick=upload()>分享</button>
+                    <button type="button" class="btn btn-default upload-close" data-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MyBook-Modal -->
+    <div class="modal fade" id="book-condition" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="look-book">id：look-book</h4>
+                </div>
+                <div class="modal-body">
+                    <label>借书人：</label><span></span><br>
+                    <label>借书号：</label><span></span><br>
+                    <label>借书时间：</label><span></span><br>
+                    <label>到期时间：</label><span></span><br>
+                </div>   <!-- modal-body -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onclick=back()>请求紧急撤回</button>
+                    <button type="button" class="btn btn-default upload-close" data-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

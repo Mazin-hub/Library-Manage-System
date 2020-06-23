@@ -1,0 +1,86 @@
+.ul-background {
+    /*background-color:cadetblue;*/
+}
+.size{
+    margin-top: 50px;
+    margin-bottom: 50px;
+    font-size: 30px;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 0 30px chartreuse;
+    text-align: center;
+}
+.login{
+    margin-left: 1250px;
+}
+.solid{
+    margin-left: 200px;
+    margin-right: 200px;
+    padding-top: 30px;
+    padding-left: 30px;
+    padding-right: 30px;
+    padding-bottom: 500px;
+    border: #999999 solid 2px;
+}
+body{
+    background:#b0fcff;
+    margin-bottom: 100px;
+}
+.font{
+    color: #0f0f0f;
+    font-weight: bold;
+    font-size: 17px;
+}
+.juli{
+    margin-top: 30px;
+    /*margin-bottom: 10px;*/
+}
+.li-length{
+    font-weight: bold;
+    font-size: 20px;
+    width: 170px;
+}
+.vertical{
+    margin-top: 5px;
+    margin-left: 7px;
+}
+.text-align{
+    text-align: center;
+}
+.detial-font-juli{
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+.rate{
+    color: gold;
+    font-weight: bold;
+    font-size: 20px;
+}
+.hide{
+    display: none;
+}
+textarea{
+    resize: none;
+}
+.red-font{
+    font-weight: bold;
+    font-size: 20px;
+    color: red;
+}
+.bn{
+    background: cadetblue;
+    width: 150px;
+    color: white;
+}
+.li-manage{
+    color: blueviolet;
+    width: 150px;
+}
+.mana-list{
+    padding-bottom: 500px;
+    padding-top: 30px;
+    background-color: cornflowerblue;
+}
+.list-color{
+    color: white;
+}
