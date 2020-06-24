@@ -1,5 +1,5 @@
 .ul-background {
-    /*background-color:cadetblue;*/
+    background-color:#5bc0de;
 }
 .size{
     margin-top: 50px;
@@ -14,12 +14,13 @@
     margin-left: 1250px;
 }
 .solid{
-    margin-left: 200px;
-    margin-right: 200px;
+    margin-left: 150px;
+    margin-right: 150px;
     padding-top: 30px;
     padding-left: 30px;
     padding-right: 30px;
-    padding-bottom: 500px;
+    /*padding-bottom: 500px;*/
+    height: 1100px;
     border: #999999 solid 2px;
 }
 body{
@@ -30,6 +31,9 @@ body{
     color: #0f0f0f;
     font-weight: bold;
     font-size: 17px;
+}
+.li-font{
+    color:#d7ff0a;
 }
 .juli{
     margin-top: 30px;
@@ -73,14 +77,17 @@ textarea{
     color: white;
 }
 .li-manage{
-    color: blueviolet;
     width: 150px;
 }
 .mana-list{
-    padding-bottom: 500px;
+    /*padding-bottom: 500px;*/
+    height: 1015px;
     padding-top: 30px;
     background-color: cornflowerblue;
 }
 .list-color{
     color: white;
+}
+.manage-row{
+    margin-left: 2px;
 }
