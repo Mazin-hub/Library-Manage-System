@@ -156,9 +156,9 @@
                     <input class="btn btn-default" type="button" value="确认" onclick=lock()>
                 </div>
             </div>
-            <!--真实管理界面-->
+            <!--真实管理界面 , 靠 li-manage 、solid 、col-lg-1 控制 -->
             <div class="manage-row row">
-                <div class="col-lg-2  mana-list">
+                <div class="col-lg-1  mana-list">
                     <ul class="nav nav-tabs" role="tablist">
                         <li class="li-manage"><a class="list-color" href="#books-deal" role="tab" data-toggle="tab" onclick=show_manage_books()>图书增删改</a></li>
                         <li class="li-manage"><a class="list-color" href="#borrow-deal" role="tab" data-toggle="tab" onclick=req_borrow()>借阅请求处理</a></li>
@@ -169,7 +169,7 @@
                     </ul>
                 </div>
 
-                <div class="col-lg-10" style="margin-top: 10px">
+                <div class="col-lg-11" style="margin-top: 10px">
                     <div class="tab-content">
                         <div role="tabpanel" class="tab-pane active" id="books-deal">
                             <table id="manage-table" border="1" class="table table-bordered table-hover text-align">
@@ -189,18 +189,67 @@
 
                         <div role="tabpanel" class="tab-pane" id="borrow-deal">
                             借阅处理
+                            <table id="req-borrow" border="1" class="table table-bordered table-hover text-align">
+                                <tr>
+                                    <th class="text-align">书号</th>
+                                    <th class="text-align">书名</th>
+                                    <th class="text-align">作者</th>
+                                    <th class="text-align">提供人</th>
+                                    <th class="text-align">借阅人</th>
+                                    <th class="text-align">借阅日期</th>
+                                    <th class="text-align">归还日期</th>
+                                    <th class="text-align"></th>
+                                    <th class="text-align"></th>
+                                </tr>
+                            </table>
                         </div>
 
                         <div role="tabpanel" class="tab-pane" id="return-deal">
                             归还处理
+                            <table id="req-return" border="1" class="table table-bordered table-hover text-align">
+                                <tr>
+                                    <th class="text-align">书号</th>
+                                    <th class="text-align">书名</th>
+                                    <th class="text-align">作者</th>
+                                    <th class="text-align">提供人</th>
+                                    <th class="text-align">借阅人</th>
+                                    <th class="text-align">借阅日期</th>
+                                    <th class="text-align">归还日期</th>
+                                    <th class="text-align"></th>
+                                </tr>
+                            </table>
                         </div>
 
                         <div role="tabpanel" class="tab-pane" id="delay-deal">
                             延迟处理
+                            <table id="req-delay" border="1" class="table table-bordered table-hover text-align">
+                                <tr>
+                                    <th class="text-align">书号</th>
+                                    <th class="text-align">书名</th>
+                                    <th class="text-align">作者</th>
+                                    <th class="text-align">提供人</th>
+                                    <th class="text-align">借阅人</th>
+                                    <th class="text-align">借阅日期</th>
+                                    <th class="text-align">归还日期</th>
+                                    <th class="text-align">请求延期至</th>
+                                    <th class="text-align"></th>
+                                    <th class="text-align"></th>
+                                </tr>
+                            </table>
                         </div>
 
                         <div role="tabpanel" class="tab-pane" id="upload-deal">
                             上传图书处理
+                            <table id="req-upload" border="1" class="table table-bordered table-hover text-align">
+                                <tr>
+                                    <th class="text-align">书名</th>
+                                    <th class="text-align">作者</th>
+                                    <th class="text-align">提供人</th>
+                                    <th class="text-align">上传日期</th>
+                                    <th class="text-align"></th>
+                                    <th class="text-align"></th>
+                                </tr>
+                            </table>
                         </div>
 
                         <div role="tabpanel" class="tab-pane" id="information-deal">
