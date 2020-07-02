@@ -10,6 +10,24 @@ public class book {
     private String provider;
     // 判断此书  未被借用（1）、被借用（0）、管理员未通过审核（-1） 3种状态
     private String status;
+    private Long total;
+    private Long now;
+
+    public Long getTotal() {
+        return total;
+    }
+
+    public void setTotal(Long total) {
+        this.total = total;
+    }
+
+    public Long getNow() {
+        return now;
+    }
+
+    public void setNow(Long now) {
+        this.now = now;
+    }
 
     public book() {
     }

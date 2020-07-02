@@ -122,8 +122,8 @@ function detial(obj) {
     var tag = $("a[data-target='#delay-return']").html(),             // 借阅状态
         id = $(obj).parent().parent().parent().parent().prop("id"),    // 根据table的id判断是哪个页面
         index = $(obj).parent().parent().children(":eq(0)").html() - 1,   // 表格的序号和数据下标有关系
-        detials = new Array(7),               //  借阅面板
-        confirms = new Array(6),              //  确认借阅面板
+        detials = new Array(),               //  借阅面板
+        confirms = new Array(),              //  确认借阅面板
         tempBooks;                          // detial(obj) 方法用于两个界面，而modal用的数据不同，作为中间变量赋值
     // 遇到是  能延期 或 能归还 的情况，那么不显示借阅，当且仅当是已归还的情况，搜索页面必定显示可借阅按钮
     if(tag === "已归还" || id === "search-table"){
@@ -131,7 +131,6 @@ function detial(obj) {
     }else{
         $("button[data-target='#confirm-borrow']").prop("class","hide")
     }
-
     // 判断是哪个页面调用detial()
     if(id === "search-table"){
         // 搜索界面
@@ -141,23 +140,23 @@ function detial(obj) {
         tempBooks = borrowBooks;
     }
     // 借阅面板的赋值
-    // detials.push(tempBooks.data[index].bookName);
-    // detials.push(tempBooks.data[index].author);
-    // detials.push(tempBooks.data[index].genre);
-    // detials.push(tempBooks.data[index].publish);
-    // detials.push(tempBooks.data[index].provider);
-    // detials.push(tempBooks.data[index].total);
-    // detials.push(tempBooks.data[index].now);
+    detials.push(tempBooks.data[index].bookName);
+    detials.push(tempBooks.data[index].author);
+    detials.push(tempBooks.data[index].genre);
+    detials.push(tempBooks.data[index].publish);
+    detials.push(tempBooks.data[index].provider);
+    detials.push(tempBooks.data[index].total);
+    detials.push(tempBooks.data[index].now);
     // 确认借阅面板的赋值
     var date = new Date(),
         borrowDate =  date.getFullYear() + "-" + (date.getMonth()+1) + "-" +date.getDate(),
         returnDate = date.getFullYear() + "-" + (date.getMonth()+2) + "-" +date.getDate();
-    // confirms.push(tempBooks.data[index].bookName);
-    // confirms.push(tempBooks.data[index].author);
-    // confirms.push(tempBooks.data[index].genre);
-    // confirms.push(tempBooks.data[index].provider);
-    // confirms.push(borrowDate);
-    // confirms.push(returnDate);
+    confirms.push(tempBooks.data[index].bookName);
+    confirms.push(tempBooks.data[index].author);
+    confirms.push(tempBooks.data[index].genre);
+    confirms.push(tempBooks.data[index].provider);
+    confirms.push(borrowDate);
+    confirms.push(returnDate);
 
     // 对两个modal都进行相应赋值 ,
     for (var j = 0; j < 7; j++) {
@@ -190,54 +189,44 @@ function search() {
     console.log(genre);
     console.log(publish);
     $.ajax({
-        url:"",
+        url:"./SearchServlet",
         data:{"bookName":bookName,"author":author,"genre":genre,"publish":publish},
         type:"post",
         success:function (data) {
             console.log(data);
             searchBooks = data;
-            // $(".search-hide").prop("class","search-hide");  // 取消class=hide
-            // for (var i = 0; i < searchBooks.data.length; i++) {
-            //     $("#search-table").append(
-            //         "<tr>" +
-            //         "<td>"+(i+1)+"</td>" +
-            //         "<td><a href=\"javascript:;\" data-toggle=\"modal\" data-target=\"#detial\" onclick=detial(this)>"+searchBooks.data[i].bookName+"</a></td>\n" +
-            //         "<td>"+searchBooks.data[i].author+"</td>\n" +
-            //         "<td>"+searchBooks.data[i].genre+"</td>\n" +
-            //         "<td>"+searchBooks.data[i].publish+"</td>\n" +
-            //         "</tr>"
-            //     );
-            // }
+            $(".search-hide").prop("class","search-hide");  // 取消class=hide
+            for (var i = 0; i < searchBooks.data.length; i++) {
+                $("#search-table").append(
+                    "<tr>" +
+                    "<td>"+(i+1)+"</td>" +
+                    "<td><a data-toggle=\"modal\" data-target=\"#detial\" onclick=detial(this)>"+searchBooks.data[i].bookName+"</a></td>\n" +
+                    "<td>"+searchBooks.data[i].author+"</td>\n" +
+                    "<td>"+searchBooks.data[i].genre+"</td>\n" +
+                    "<td>"+searchBooks.data[i].publish+"</td>\n" +
+                    "</tr>"
+                );
+            }
         },
         dataType:"json",
         error:function () {
             console.log("搜索ajax失败");
-            $(".search-hide").prop("class","search-hide");
         }
     });
-    // i < searchBooks.data.length，为表格添加行，modal赋值在 detial() ,效果测试
-    for (var i = 0; i < 2; i++) {
-        $("#search-table").append(
-            "<tr>" +
-            "<td>"+(i+1)+"</td>" +
-            "<td><a href=\"javascript:;\" data-toggle=\"modal\" data-target=\"#detial\" onclick=detial(this)>爱的教育</a></td>\n" +
-            "<td>?</td>\n" +
-            "<td>?</td>\n" +
-            "<td>?</td>\n" +
-            "</tr>"
-        );
-    }
 }
 
 // 1.2   确认借阅
 function confirm_borrow() {
-    alert("已提交申请，等待审核");
+    console.log("已提交申请，等待审核");
     var bookName = $(".confirm span[class='value']:nth-child(n)")[0].innerText,
         borrowDate = $(".confirm span[class='value']:nth-child(n)")[4].innerText,
         returnDate = $(".confirm span[class='value']:nth-child(n)")[5].innerText;
+    console.log(bookName);
+    console.log(borrowDate);
+    console.log(returnDate);
     // 插入 borrow ，设置 status 为 borrow 、request 为 0
     $.ajax({
-        url:"",
+        url:"./confirmBorrowServlet",
         type:"post",
         data:{"bookName":bookName,"borrowDate":borrowDate,"returnDate":returnDate},
         success:function (data) {
