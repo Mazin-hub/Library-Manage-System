@@ -1,7 +1,7 @@
-package com.Library.Servlet.Search;
+package com.Library.Servlet.Borrow;
 
-import com.Library.Service.Impl.SearchServiceImpl;
-import com.Library.Service.SearchService;
+import com.Library.Service.BorrowService;
+import com.Library.Service.Impl.BorrowServiceImpl;
 import com.Library.domain.Result;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -10,29 +10,30 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.ws.Service;
+import java.awt.image.RescaleOp;
 import java.io.IOException;
 
-@WebServlet("/confirmBorrowServlet")
-public class confirmBorrowServlet extends HttpServlet {
+@WebServlet("/borrowReturnServlet")
+public class borrowReturnServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         request.setCharacterEncoding("utf-8");
         response.setContentType("application/json;charset=utf-8");
         String bookName = request.getParameter("bookName");
-        String borrowDate = request.getParameter("borrowDate");
-        String returnDate = request.getParameter("returnDate");
-        SearchService searchService = new SearchServiceImpl();
-        int count = searchService.confirmBorrow(bookName, borrowDate, returnDate);
+        String provider = request.getParameter("provider");
+//        System.out.println(bookName);
+//        System.out.println(provider);
+        BorrowService borrowService = new BorrowServiceImpl();
         Result result = new Result();
-        if(count == 1) {
-            result.setMessage("申请借阅成功");
+        int i = borrowService.borrowReturn(bookName, provider);
+        if(i == 1){
+            result.setMessage("申请归还成功");
         }else{
-            result.setMessage("申请借阅失败");
+            result.setMessage("申请归还失败");
         }
         ObjectMapper objectMapper = new ObjectMapper();
-        String confirmBorrow = objectMapper.writeValueAsString(result);
-        response.getWriter().write(confirmBorrow);
+        String json = objectMapper.writeValueAsString(result);
+        response.getWriter().write(json);
     }
 
     @Override

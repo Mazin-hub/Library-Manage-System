@@ -17,119 +17,39 @@ $(function () {
        借阅数据需要做判断，判断状态，3种：延期、归还、超时归还，只有延期能点击
     */
     // 1. 借阅
-    $.ajax({
-        url:"",
-        data:{},
-        type:"post",
-        success:function (data) {
-            console.log(data);
-            borrowBooks = data;
-            if(data.data.length > 0){
-                // 如果该用户现在借了书，那么不隐藏表格
-                $("#borrow-table").prop("class","table table-bordered table-hover text-align");
-                // var status = [];   // 登记 状态
-                // for (var i = 0; i < borrowBooks.data.length; i++) {
-                //     if(borrowBooks.data[i].status.equal("-1")){
-                //         status.push({"status":"超时，请立即到实体图书馆归还"});
-                //     }else if (borrowBooks.data[i].status.equal("0")){
-                //         status.push({"status":"已归还"});
-                //     }else if (borrowBooks.data[i].status.equal("1")){
-                //         status.push({"status":"延期归还 or 现在归还"});
-                //     }
-                //     // length > 0 存在数据
-                //     $("#borrow-table").append(
-                //         "<tr>\n" +
-                //         "<td>"+(i+1)+"</td>\n" +
-                //         "<td><a href=\"javascript:;\" data-toggle=\"modal\" data-target=\"#detial\" onclick=detial(this)>"+borrowBooks.data[i].bookName+"</a></td>\n" +
-                //         "<td>"+borrowBooks.data[i].author+"</td>\n" +
-                //         "<td>"+borrowBooks.data[i].genre+"</td>\n" +
-                //         "<td>"+borrowBooks.data[i].borrowDate+"</td>\n" +
-                //         "<td>"+borrowBooks.data[i].returnDate+"</td>\n" +
-                //         "<td><a href=\"javascript:;\" data-toggle=\"modal\" data-target=\"#delay-return\" onclick=delay_return()>"+status[i].status+"</a></td>\n" +
-                //         "</tr>"
-                //     );
-                // }
-            }
-        },
-        dataType:"json",
-        error:function () {
-            console.log("我的借阅ajax失败");
-            $("#borrow-table").prop("class","table table-bordered table-hover text-align");
-            for (var i = 0; i < 4; i++) {
-                // length > 0 存在数据
-                $("#borrow-table").append(
-                    "<tr>\n" +
-                    "<td>"+(i+1)+"</td>\n" +
-                    "<td><a href=\"javascript:;\" data-toggle=\"modal\" data-target=\"#detial\" onclick=detial(this)>爱的教育</a></td>\n" +
-                    "<td>?</td>\n" +
-                    "<td>?</td>\n" +
-                    "<td>?</td>\n" +
-                    "<td>?</td>\n" +
-                    "<td><a href=\"javascript:;\" data-toggle=\"modal\" data-target=\"#delay-return\" onclick=delay_return(this)>延期归还 or 现在归还</a></td>\n" +
-                    "</tr>"
-                );
-            }
-        }
-    });
+    borrow();
+
     // 2. 我的图书
-    $.ajax({
-        url:"",
-        type:"post",
-        data:{},
-        success:function (data) {
-            console.log(data);
-            myBooks = data;
-            // if(myBooks.data.length > 0){
-            //     // 隐藏语句
-            //     $("#NoBook").prop("class", "hide");
-            //     $("#upload-table").prop("class","table table-bordered table-hover text-align");
-            //     for (var i = 0; i < myBooks.data.length; i++) {
-            //         $("#upload-table").append(
-            //             "<tr>\n" +
-            //             "<td>"+myBooks.data[i].bookName+"</td>\n" +
-            //             "<td>"+myBooks.data[i].author+"</td>\n" +
-            //             "<td>"+myBooks.data[i].uploadDate+"</td>\n" +
-            //             "<td>"+myBooks.data[i].bookId+"</td>\n" +
-            //             "<td><a href=\"javascript:;\" data-toggle=\"modal\" data-target=\"#book-condition\">查看状态</a></td>\n" +
-            //             "</tr>"
-            //         );
-            //     }
-            // }
+    Mybooks();
 
-            //其他
-        },
-        dataType:"json",
-        error:function () {
-            $("#upload-table").prop("class","table table-bordered table-hover text-align");
-            console.log("我的图书请求失败");
-            $("#upload-table").append(
-                "<tr>\n" +
-                "<td>?</td>\n" +
-                "<td>?</td>\n" +
-                "<td>?</td>\n" +
-                "<td><a href=\"javascript:;\" data-toggle=\"modal\" data-target=\"#book-condition\">查看状态</a></td>\n" +
-                "</tr>"
-            );
-        }
-    })
-
-})
+});
 
 // 点击书名显示书信息
 function detial(obj) {
     console.log($(obj).parent().parent().parent().parent().prop("id"));
     console.log($(obj).parent().parent().children(":eq(0)").html());
+    console.log($(obj).parent().parent().children(":eq(1)").children(":eq(0)").html());
     var tag = $("a[data-target='#delay-return']").html(),             // 借阅状态
         id = $(obj).parent().parent().parent().parent().prop("id"),    // 根据table的id判断是哪个页面
         index = $(obj).parent().parent().children(":eq(0)").html() - 1,   // 表格的序号和数据下标有关系
+        bookName = $(obj).parent().parent().children(":eq(1)").children(":eq(0)").html(),   // 查看详情的书名
         detials = new Array(),               //  借阅面板
         confirms = new Array(),              //  确认借阅面板
         tempBooks;                          // detial(obj) 方法用于两个界面，而modal用的数据不同，作为中间变量赋值
-    // 遇到是  能延期 或 能归还 的情况，那么不显示借阅，当且仅当是已归还的情况，搜索页面必定显示可借阅按钮
-    if(tag === "已归还" || id === "search-table"){
+    // 借阅页面 显示 “已归还”则可以借阅 ；
+    if(tag === "已归还"){
         $("button[data-target='#confirm-borrow']").prop("class","btn btn-success");
+    }else if(id === "borrow-table"){
+        $("button[data-target='#confirm-borrow']").prop("class","hide");
     }else{
-        $("button[data-target='#confirm-borrow']").prop("class","hide")
+        $("button[data-target='#confirm-borrow']").prop("class","btn btn-success");
+    }
+    // 搜索页面，如果存在 被借 的书籍 不显示 借阅 按钮
+    for (var i = 0; i < borrowBooks.data.length; i++) {
+        if(bookName === borrowBooks.data[i].bookName){
+            $("button[data-target='#confirm-borrow']").prop("class","hide");
+            break;
+        }
     }
     // 判断是哪个页面调用detial()
     if(id === "search-table"){
@@ -196,6 +116,14 @@ function search() {
             console.log(data);
             searchBooks = data;
             $(".search-hide").prop("class","search-hide");  // 取消class=hide
+            // 这里需要多加个 tbody
+            $("#search-table").html("<tbody><tr>\n" +
+                "<th class=\"text-align\">序号</th>\n" +
+                "<th class=\"text-align\">书名</th>\n" +
+                "<th class=\"text-align\">作者</th>\n" +
+                "<th class=\"text-align\">类别</th>\n" +
+                "<th class=\"text-align\">出版日期</th>\n" +
+                "</tr>");
             for (var i = 0; i < searchBooks.data.length; i++) {
                 $("#search-table").append(
                     "<tr>" +
@@ -231,18 +159,8 @@ function confirm_borrow() {
         data:{"bookName":bookName,"borrowDate":borrowDate,"returnDate":returnDate},
         success:function (data) {
             console.log(data.message);
-            // 插入
-            $("#borrow-table").append(
-                "<tr>\n" +
-                "<td>"+"表格末尾序号"+"</td>\n" +
-                "<td><a href=\"javascript:;\" data-toggle=\"modal\" data-target=\"#detial\" onclick=detial(this)>爱的教育</a></td>\n" +
-                "<td>?</td>\n" +
-                "<td>?</td>\n" +
-                "<td>?</td>\n" +
-                "<td>?</td>\n" +
-                "<td>等待审核</td>\n" +
-                "</tr>"
-            );
+            // 插入,这里是重新更新“我的借阅”界面
+            borrow();
         },
         dataType:"json",
         error:function () {
@@ -266,14 +184,15 @@ function delay() {
     console.log(tempDate);
     bookName = $(".delay span[class='value']")[0].innerText;
     provider = $(".delay span[class='value']")[3].innerText;
-    // console.log(bookName);
-    // console.log(provider);
+    console.log(bookName);
+    console.log(provider);
     // 插入 borrow ，找到对应记录 设置 request 为 1
     $.ajax({
-        url:"",
+        url:"./borrowDelayServlet",
         data:{"bookName":bookName,"provider":provider,"newReturnDate":tempDate},
         type:"post",
         success:function (data) {
+            borrow();
             console.log(data.message);
         },
         dataType:"json"
@@ -283,35 +202,109 @@ function delay() {
 
 // 2.2  确定归还（按钮提交至管理员）
 function reback(){
-    var bookName = $(".delay span[class='value']")[0].innerText;
-    // 根据书名，去borrow找到对应记录，设置status 为 return
+    var bookName = $(".delay span[class='value']")[0].innerText,
+        provider = $(".delay span[class='value']")[3].innerText;
+    // 根据书名、提供人，去borrow找到对应记录，设置wstatus 为 return
+    console.log(bookName);
+    console.log(provider);
     $.ajax({
-        url:"",
+        url:"./borrowReturnServlet",
         type:"post",
-        data:{"bookName":bookName},
+        data:{"bookName":bookName,"provider":provider},
         success:function (data) {
+            borrow();
             console.log(data.message);
         },
         dataType:"json",
         error:function () {
             console.log("归还失败");
         }
-    })
+    });
+    $(".delay-close").click();
 }
 
 // 2.3  为 modal 添加数据
 function delay_return(obj) {
-    // console.log($(obj).parent().parent().children(":eq(0)").html());
+    console.log($(obj).parent().parent().children(":eq(0)").html());  // 下标
     var index = $(obj).parent().parent().children(":eq(0)").html() - 1,
-        delays = new Array(5);
-    // delays.push(borrowBooks.data[index].bookName);
-    // delays.push(borrowBooks.data[index].author);
-    // delays.push(borrowBooks.data[index].genre);
-    // delays.push(borrowBooks.data[index].provider);
-    // delays.push(borrowBooks.data[index].returnDate);
-    // for (var i = 0; i < 5; i++) {
-    //     $($(".delay span[class='value']:nth-child(n)")[i]).html(delays[i]);
-    // }
+        delays = new Array();
+    delays.push(borrowBooks.data[index].bookName);
+    delays.push(borrowBooks.data[index].author);
+    delays.push(borrowBooks.data[index].genre);
+    delays.push(borrowBooks.data[index].provider);
+    delays.push(borrowBooks.data[index].returnDate);
+    for (var i = 0; i < 5; i++) {
+        $($(".delay span[class='value']:nth-child(n)")[i]).html(delays[i]);
+    }
+}
+
+//2.4 为 “我的借阅”页面添加表格信息
+function borrow() {
+    $.ajax({
+        url:"./borrowTableServlet",
+        data:{},
+        type:"post",
+        success:function (data) {
+            console.log(data);
+            borrowBooks = data;
+            $("#borrow-table").html("<tbody><tr>\n" +
+                "<th class=\"text-align\">序号</th>\n" +
+                "<th class=\"text-align\">书名</th>\n" +
+                "<th class=\"text-align\">作者</th>\n" +
+                "<th class=\"text-align\">类别</th>\n" +
+                "<th class=\"text-align\">借阅日期</th>\n" +
+                "<th class=\"text-align\">归还日期</th>\n" +
+                "<th class=\"text-align\">状态</th>\n" +
+                "</tr>");
+            if(borrowBooks.data.length > 0){
+                // 如果该用户现在借了书，那么不隐藏表格
+                $("#borrow-table").prop("class","table table-bordered table-hover text-align");
+                var status = [];   // 登记 状态
+                for (var i = 0; i < borrowBooks.data.length; i++) {
+                    switch (borrowBooks.data[i].wstatus) {
+                        case "-1": status.push({"status":"超时"}); break;
+                        case "0" : status.push({"status":"已归还"}); break;
+                        case "1" : status.push({"status":"延期归还 or 现在归还"});break;
+                        case "borrow" : status.push({"status":"借阅审核中"});break;
+                        case "fail" : status.push({"status":"无法继续延期"});break;
+                        case "return": status.push({"status":"归还审核中"});break;
+                    }
+                    if(borrowBooks.data[i].request !== "0"){
+                        status[i].status = "延期审核中";
+                    }
+                    if(status[i].status !== "延期归还 or 现在归还"){
+                        $("#borrow-table").append(
+                            "<tr>\n" +
+                            "<td>"+(i+1)+"</td>\n" +
+                            "<td><a data-toggle=\"modal\" data-target=\"#detial\" onclick=detial(this)>"+borrowBooks.data[i].bookName+"</a></td>\n" +
+                            "<td>"+borrowBooks.data[i].author+"</td>\n" +
+                            "<td>"+borrowBooks.data[i].genre+"</td>\n" +
+                            "<td>"+borrowBooks.data[i].borrowDate+"</td>\n" +
+                            "<td>"+borrowBooks.data[i].returnDate+"</td>\n" +
+                            "<td>"+status[i].status+"</td>\n" +
+                            "</tr>"
+                        );
+                    }else{
+                        $("#borrow-table").append(
+                            "<tr>\n" +
+                            "<td>"+(i+1)+"</td>\n" +
+                            "<td><a data-toggle=\"modal\" data-target=\"#detial\" onclick=detial(this)>"+borrowBooks.data[i].bookName+"</a></td>\n" +
+                            "<td>"+borrowBooks.data[i].author+"</td>\n" +
+                            "<td>"+borrowBooks.data[i].genre+"</td>\n" +
+                            "<td>"+borrowBooks.data[i].borrowDate+"</td>\n" +
+                            "<td>"+borrowBooks.data[i].returnDate+"</td>\n" +
+                            "<td><a data-toggle=\"modal\" data-target=\"#delay-return\" onclick=delay_return(this)>"+status[i].status+"</a></td>\n" +
+                            "</tr>"
+                        );
+                    }
+                }
+            }
+        },
+        dataType:"json",
+        error:function () {
+            console.log("我的借阅ajax失败");
+        }
+    });
 }
 
 /**
@@ -381,12 +374,12 @@ function manage_books() {
             $("#manage-table").append(
                 "<tr>\n" +
                 "<td>1</td>\n" +
-                "<td>1</td>\n" +
-                " <td>1</td>\n" +
-                "<td>1</td>\n" +
-                "<td>1</td>\n" +
-                "<td>1</td>\n" +
-                "<td>1</td>\n" +
+                "<td>爱情步在啊实打实的撒</td>\n" +
+                " <td>马志鹏</td>\n" +
+                "<td>科幻</td>\n" +
+                "<td>2020-8-30</td>\n" +
+                "<td>2020-8-30</td>\n" +
+                "<td>马志鹏</td>\n" +
                 "<td><button class=\"btn btn-info mana-op\">修改</button></td>\n" +
                 "<td><button class=\"btn btn-danger mana-op\">删除</button></td>\n" +
                 "</tr>"
@@ -826,19 +819,12 @@ function upload() {
     tempDate = date.getFullYear() + "-" + (date.getMonth()+1) + "-" + date.getDate();
     // 插入到 book ，设 status 为 -1
     $.ajax({
-        url:"",
+        url:"./uploadMyBookServlet",
         type:"post",
         data:{"bookName":bookName,"author":author,"provider":provider,"uploadDate":tempDate},
         success:function (data) {
             console.log(data.message);
-            $("#upload-table").append(
-                "<tr>\n" +
-                "<td>"+bookName+"</td>\n" +
-                "<td>"+author+"</td>\n" +
-                "<td>"+tempDate+"</td>\n" +
-                "<td><a href=\"javascript:;\" data-toggle=\"modal\" data-target=\"#book-condition\" onclick=upload_condition()>查看状态</a></td>\n" +
-                "</tr>"
-            );
+            Mybooks();
         },
         dataType:"json",
         error:function () {
@@ -849,20 +835,91 @@ function upload() {
     $(".upload-close").click();
 }
 
+var MyBookIndex;
 // 4.2  我的书籍的状态：已被借、正在审核、还未被借, 为modal添加数据
-function upload_condition() {
-    // 写入信息,分情况,写在标题
-    $("#look-book").html();
-    for (var i = 0; i < 5; i++) {
-        $($(".condition span[class='value']:nth-child(n)")[i]).html();
+function upload_condition(obj) {
+    console.log($(obj).parent().parent().children(":eq(0)").html());  // 序号
+    MyBookIndex = $(obj).parent().parent().children(":eq(0)").html() - 1;
+    var info = new Array(),
+        index = MyBookIndex;
+    info.push(myBooks.data[index].userName);
+    info.push(myBooks.data[index].borrowDate);
+    info.push(myBooks.data[index].returnDate);
+    switch (myBooks.data[index].status) {
+        case "1": info.push("无人借用");break;
+        case "0": info.push("被借用");break;
+        case "-1": info.push("上传审核中");break;
     }
-
+    if(myBooks.data[index].recall === 1){
+        info[3] = "管理员正在处理撤回";
+    }
+    // 写入信息,分情况,写在标题
+    // $("#look-book").html();
+    for (var i = 0; i < 4; i++) {
+        $($(".condition span[class='value']:nth-child(n)")[i]).html(info[i]);
+    }
 }
 
 // 4.3  书籍主人请求撤回自己的书
 function back() {
-
+    console.log(MyBookIndex);
+    $.ajax({
+        url:"./MyBookBackServlet",
+        data:{"bookId":myBooks.data[MyBookIndex].bookId},
+        type:"post",
+        success:function (data) {
+            console.log(data.message);
+            Mybooks();
+        },
+        dataType:"json",
+        error:function () {
+            console.log("撤回失败");
+        }
+    });
+    $(".upload-close").click();
 }
+
+// 4.4 为 “我的图书”界面添加表格
+function Mybooks() {
+    $.ajax({
+        url:"./MyBooksTableServlet",
+        type:"post",
+        data:{},
+        success:function (data) {
+            console.log(data);
+            myBooks = data;
+            if(myBooks.data.length > 0){
+                $("#upload-table").html("<tbody><tr>\n" +
+                    "<th class=\"text-align\">序号</th>\n" +
+                    "<th class=\"text-align\">书名</th>\n" +
+                    "<th class=\"text-align\">作者</th>\n" +
+                    "<th class=\"text-align\">提交日期</th>\n" +
+                    "<th class=\"text-align\">状态</th>\n" +
+                    "</tr>");
+                // 隐藏语句
+                $("#NoBook").prop("class", "hide");
+                $("#upload-table").prop("class","table table-bordered table-hover text-align");
+                for (var i = 0; i < myBooks.data.length; i++) {
+                    $("#upload-table").append(
+                        "<tr>\n" +
+                        "<td>"+(i+1)+"</td>\n" +
+                        "<td>"+myBooks.data[i].bookName+"</td>\n" +
+                        "<td>"+myBooks.data[i].author+"</td>\n" +
+                        "<td>"+myBooks.data[i].uploadDate+"</td>\n" +
+                        "<td><a data-toggle=\"modal\" data-target=\"#book-condition\" onclick=upload_condition(this)>查看状态</a></td>\n" +
+                        "</tr>"
+                    );
+                }
+            }
+            //其他
+        },
+        dataType:"json",
+        error:function () {
+            console.log("我的图书请求失败");
+        }
+    });
+}
+
 
 /**
  *  5. 联系管理员

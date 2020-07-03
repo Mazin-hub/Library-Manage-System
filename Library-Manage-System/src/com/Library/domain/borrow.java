@@ -5,7 +5,7 @@ public class borrow {
     private String userName;
     private String borrowDate;
     private String returnDate;
-    private String status;
+    private String wstatus;
     private String request;
 
     public Integer getBookId() {
@@ -40,12 +40,12 @@ public class borrow {
         this.returnDate = returnDate;
     }
 
-    public String getStatus() {
-        return status;
+    public String getWstatus() {
+        return wstatus;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setWstatus(String wstatus) {
+        this.wstatus = wstatus;
     }
 
     public String getRequest() {

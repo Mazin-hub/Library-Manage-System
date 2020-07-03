@@ -1,7 +1,8 @@
-package com.Library.Servlet.Search;
+package com.Library.Servlet.Borrow;
 
-import com.Library.Service.Impl.SearchServiceImpl;
-import com.Library.Service.SearchService;
+import com.Library.Service.BorrowService;
+import com.Library.Service.Impl.BorrowServiceImpl;
+import com.Library.domain.BorrowInformation;
 import com.Library.domain.Result;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -10,29 +11,27 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.ws.Service;
 import java.io.IOException;
+import java.util.List;
 
-@WebServlet("/confirmBorrowServlet")
-public class confirmBorrowServlet extends HttpServlet {
+@WebServlet("/borrowTableServlet")
+public class borrowTableServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         request.setCharacterEncoding("utf-8");
         response.setContentType("application/json;charset=utf-8");
-        String bookName = request.getParameter("bookName");
-        String borrowDate = request.getParameter("borrowDate");
-        String returnDate = request.getParameter("returnDate");
-        SearchService searchService = new SearchServiceImpl();
-        int count = searchService.confirmBorrow(bookName, borrowDate, returnDate);
+        BorrowService borrowService = new BorrowServiceImpl();
+        List<BorrowInformation> information = borrowService.getBorrowTableInformation();
         Result result = new Result();
-        if(count == 1) {
-            result.setMessage("申请借阅成功");
+        if(information.size() != 0){
+            result.setMessage("我的借阅ajax成功");
+            result.setData(information);
         }else{
-            result.setMessage("申请借阅失败");
+            result.setData("我没有借阅");
         }
         ObjectMapper objectMapper = new ObjectMapper();
-        String confirmBorrow = objectMapper.writeValueAsString(result);
-        response.getWriter().write(confirmBorrow);
+        String json = objectMapper.writeValueAsString(result);
+        response.getWriter().write(json);
     }
 
     @Override

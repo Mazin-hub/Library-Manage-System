@@ -45,7 +45,7 @@ public class SearchDao {
         String countSql = "select count(*) from booknum where bookName = ?";
         String getSql = "select * from booknum where bookName = ?";
         String insertSql = "insert into booknum(bookName,total,now) values(?,?,?)";
-        String updateSql = "update booknum set total = ? and now = ? where bookName = ?";
+        String updateSql = "update booknum set total = ? , now = ? where bookName = ?";
 
         StringBuilder sb = new StringBuilder(sql);
         for(book book : books){
@@ -55,6 +55,7 @@ public class SearchDao {
             // 2.1 排除掉正在上传的书籍，得到总库存
             sb.append("and bookName = '" + book.getBookName() + "' ");
             Long total = template.queryForObject(sb.toString(),Long.class);
+
             // 2.2 还未被借 的 书籍 状态为 1 , 排除 -1 和 0 的元组 , 得到现存
             sb.append("and status <> 0 ");
             Long now = template.queryForObject(sb.toString(),Long.class);
@@ -66,11 +67,12 @@ public class SearchDao {
                 // bookNum 表中 有 对应记录
                 /*  这里显得傻逼，是因为，更新在什么时候进行的问题还没考虑清楚  */
                 // 先更新
-                template.update(updateSql,total,now,book.getBookName());
+                int c = template.update(updateSql, total, now, book.getBookName());
+                System.out.println(c);
                 // 再查询
-                bookNum bookNum = template.queryForObject(getSql, new BeanPropertyRowMapper<>(bookNum.class), book.getBookName());
-                book.setTotal(bookNum.getTotal());
-                book.setNow(bookNum.getNow());
+//                bookNum booknum = template.queryForObject(getSql, new BeanPropertyRowMapper<>(bookNum.class), book.getBookName());
+                book.setTotal(total);
+                book.setNow(now);
                 continue;
             }else{
                 // 表中没有对应记录,查询，插入
@@ -78,8 +80,6 @@ public class SearchDao {
             }
         }
 
-
-        System.out.println(books.get(0));
         return books;
     }
 }

@@ -12,7 +12,7 @@
     <script src="js/jquery-3.3.1.js"></script>
     <!-- 3. 导入bootstrap的js文件 -->
     <script src="./js/bootstrap.min.js"></script>
-    <script src="js/index.js"></script>
+    <script src="./js/index.js"></script>
     <script type="text/javascript"></script>
 </head>
 <body>
@@ -158,7 +158,7 @@
             </div>
             <!--真实管理界面 , 靠 li-manage 、solid 、col-lg-1 控制 -->
             <div class="manage-row row">
-                <div class="col-lg-1  mana-list">
+                <div class="col-lg-2  mana-list">
                     <ul class="nav nav-tabs" role="tablist">
                         <li class="li-manage"><a class="list-color" href="#books-deal" role="tab" data-toggle="tab" onclick=show_manage_books()>图书增删改</a></li>
                         <li class="li-manage"><a class="list-color" href="#borrow-deal" role="tab" data-toggle="tab" onclick=req_borrow()>借阅请求处理</a></li>
@@ -169,7 +169,7 @@
                     </ul>
                 </div>
 
-                <div class="col-lg-11" style="margin-top: 10px">
+                <div class="col-lg-10" style="margin-top: 10px">
                     <div class="tab-content">
                         <div role="tabpanel" class="tab-pane active" id="books-deal">
                             <table id="manage-table" border="1" class="table table-bordered table-hover text-align">
@@ -269,6 +269,7 @@
                 <div>
                     <table id="upload-table" border="1" class="table table-bordered table-hover text-align hide">
                         <tr>
+                            <th class="text-align">序号</th>
                             <th class="text-align">书名</th>
                             <th class="text-align">作者</th>
                             <th class="text-align">提交日期</th>
@@ -435,7 +436,6 @@
                 </div>
                 <div class="modal-body condition">
                     <label>借书人：</label><span class="value"></span><br>
-                    <label>借书号：</label><span class="value"></span><br>
                     <label>借书时间：</label><span class="value"></span><br>
                     <label>到期时间：</label><span class="value"></span><br>
                     <label>管理员的话：</label><span class="value"></span><br>

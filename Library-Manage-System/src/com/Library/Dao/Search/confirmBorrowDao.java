@@ -12,7 +12,7 @@ public class confirmBorrowDao {
     public int confirmBorrow(String bookName,String borrowDate,String returnDate){
         System.out.println("Dao");
         String bookIdSql = "select bookId from book where bookName = ?";
-        String insertSql = "insert into borrow(bookId,userName,borrowDate,returnDate,status) values(?,?,?,?,?)";
+        String insertSql = "insert into borrow(bookId,userName,borrowDate,returnDate,wstatus) values(?,?,?,?,?)";
         List<book> book = template.query(bookIdSql, new BeanPropertyRowMapper<>(book.class), bookName);
         Integer bookId = book.get(0).getBookId();
         // 1 代表成功，0 代表失败

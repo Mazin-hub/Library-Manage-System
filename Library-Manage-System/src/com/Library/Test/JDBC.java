@@ -1,6 +1,7 @@
 package com.Library.Test;
 
 import com.Library.Utils.JDBCUtils;
+import com.Library.domain.MyBooks;
 import com.Library.domain.book;
 import com.Library.domain.bookNum;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -10,6 +11,7 @@ import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.beans.Transient;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -71,10 +73,30 @@ public class JDBC {
     }
 
     @Test
-    public void test7(){
-        String sql2 = "insert into borrow(bookId,userName,borrowDate,returnDate,status) values(?,?,?,?,?)";
-        Integer id = 2;
-        int count = template.update(sql2,id,"马志鹏","2020-6-30","2020-7-30","borrow");
-        System.out.println(count);
+    public void test7() throws JsonProcessingException {
+//        ObjectMapper objectMapper = new ObjectMapper();
+//        String sql = "select bookId,bookName,author,uploadDate,status,back from book where provider = ?";
+//        String selectSql = "select userName,borrowDate,returnDate from borrow where bookId = ?";
+//        List<MyBooks> all = template.query(sql, new BeanPropertyRowMapper<>(MyBooks.class), "马志鹏");
+//        String jsonAll = objectMapper.writeValueAsString(all);
+//        System.out.println(jsonAll);
+//        System.out.println("----------jsonAll------------");
+//        List<MyBooks> finalList = new ArrayList<>();
+//        for (MyBooks mybook : all) {
+//            if("0".equals(mybook.getStatus())){
+//                MyBooks my = template.queryForObject(selectSql, new BeanPropertyRowMapper<>(MyBooks.class), mybook.getBookId());
+//                // 把 被 借 的 书籍，搜索出对应的borrow人，设置在原来的全部书籍中
+//                mybook.setUserName(my.getUserName());
+//                mybook.setBorrowDate(my.getBorrowDate());
+//                mybook.setReturnDate(my.getReturnDate());
+//                finalList.add(mybook);
+//            }else{
+//                finalList.add(mybook);
+//            }
+//        }
+//        String json = objectMapper.writeValueAsString(finalList);
+//        System.out.println(json);
     }
+
+
 }
