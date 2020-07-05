@@ -21,9 +21,9 @@ public class borrowDelayServlet extends HttpServlet {
         String bookName = request.getParameter("bookName");
         String provider = request.getParameter("provider");
         String newReturnDate = request.getParameter("newReturnDate");
-//        System.out.println(bookName);
+        ;//        System.out.println(bookName);
 //        System.out.println(provider);
-//        System.out.println(newReturnDate);
+//        System.out.println(newReturnDate)
         BorrowService borrowService = new BorrowServiceImpl();
         int i = borrowService.borrowDelay(bookName, provider, newReturnDate);
         Result result = new Result();

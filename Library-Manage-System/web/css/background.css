@@ -92,6 +92,10 @@ textarea{
     margin-left: 2px;
 }
 .mana-op{
-    height: 20px;
+    height: 23px;
     padding-top: 1px;
+}
+.mana-modify-font{
+    color: #eb9316;
+    font-size: 20px;
 }

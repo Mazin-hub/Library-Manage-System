@@ -1,9 +1,10 @@
-package com.Library.Servlet.Borrow;
+package com.Library.Servlet.Manage;
 
-import com.Library.Service.BorrowService;
-import com.Library.Service.Impl.BorrowServiceImpl;
+import com.Library.Service.Impl.ManageServiceImpl;
+import com.Library.Service.ManageService;
 import com.Library.domain.BorrowInformation;
 import com.Library.domain.Result;
+import com.Library.domain.book;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.servlet.ServletException;
@@ -14,20 +15,20 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet("/borrowTableServlet")
-public class borrowTableServlet extends HttpServlet {
+@WebServlet("/ManageDealUploadServlet")
+public class ManageDealUploadServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         request.setCharacterEncoding("utf-8");
         response.setContentType("application/json;charset=utf-8");
-        BorrowService borrowService = new BorrowServiceImpl();
-        List<BorrowInformation> information = borrowService.getBorrowTableInformation();
+        ManageService manageService = new ManageServiceImpl();
         Result result = new Result();
-        if(information.size() != 0){
-            result.setMessage("我的借阅ajax成功");
-            result.setData(information);
+        List<book> uploadDeal = manageService.dealUpload();
+        if(uploadDeal.size() > 0){
+            result.setMessage("请求上传处理成功");
+            result.setData(uploadDeal);
         }else{
-            result.setMessage("我没有借阅");
+            result.setMessage("无上传请求处理");
         }
         ObjectMapper objectMapper = new ObjectMapper();
         String json = objectMapper.writeValueAsString(result);

@@ -18,7 +18,6 @@ $(function () {
     */
     // 1. 借阅
     borrow();
-
     // 2. 我的图书
     Mybooks();
 
@@ -29,35 +28,32 @@ function detial(obj) {
     console.log($(obj).parent().parent().parent().parent().prop("id"));
     console.log($(obj).parent().parent().children(":eq(0)").html());
     console.log($(obj).parent().parent().children(":eq(1)").children(":eq(0)").html());
-    var tag = $("a[data-target='#delay-return']").html(),             // 借阅状态
-        id = $(obj).parent().parent().parent().parent().prop("id"),    // 根据table的id判断是哪个页面
+    var id = $(obj).parent().parent().parent().parent().prop("id"),    // 根据table的id判断是哪个页面
         index = $(obj).parent().parent().children(":eq(0)").html() - 1,   // 表格的序号和数据下标有关系
+        tag = $($(".tag:nth-child(n)"))[index].innerText,       // 借阅状态
         bookName = $(obj).parent().parent().children(":eq(1)").children(":eq(0)").html(),   // 查看详情的书名
         detials = new Array(),               //  借阅面板
         confirms = new Array(),              //  确认借阅面板
         tempBooks;                          // detial(obj) 方法用于两个界面，而modal用的数据不同，作为中间变量赋值
-    // 借阅页面 显示 “已归还”则可以借阅 ；
-    if(tag === "已归还"){
-        $("button[data-target='#confirm-borrow']").prop("class","btn btn-success");
-    }else if(id === "borrow-table"){
-        $("button[data-target='#confirm-borrow']").prop("class","hide");
-    }else{
-        $("button[data-target='#confirm-borrow']").prop("class","btn btn-success");
-    }
-    // 搜索页面，如果存在 被借 的书籍 不显示 借阅 按钮
-    for (var i = 0; i < borrowBooks.data.length; i++) {
-        if(bookName === borrowBooks.data[i].bookName){
-            $("button[data-target='#confirm-borrow']").prop("class","hide");
-            break;
-        }
-    }
     // 判断是哪个页面调用detial()
     if(id === "search-table"){
         // 搜索界面
         tempBooks = searchBooks;
+        // 根据 status 的状态量判断当前书籍是否被借
+        if(searchBooks.data[index].status === "1"){
+            $("button[data-target='#confirm-borrow']").prop("class","btn btn-success");
+        }else if(searchBooks.data[index].status === "0"){
+            $("button[data-target='#confirm-borrow']").prop("class","hide");
+        }
     }else if(id === "borrow-table"){
         // 借阅界面
         tempBooks = borrowBooks;
+        // 借阅页面 显示 “已归还”则可以借阅 ；
+        if(tag === "已归还"){
+            $("button[data-target='#confirm-borrow']").prop("class","btn btn-success");
+        }else{
+            $("button[data-target='#confirm-borrow']").prop("class","hide");
+        }
     }
     // 借阅面板的赋值
     detials.push(tempBooks.data[index].bookName);
@@ -159,12 +155,16 @@ function confirm_borrow() {
         data:{"bookName":bookName,"borrowDate":borrowDate,"returnDate":returnDate},
         success:function (data) {
             console.log(data.message);
-            // 插入,这里是重新更新“我的借阅”界面
-            borrow();
+            if(data.message === "申请借阅失败"){
+                alert("申请借阅失败");
+            }else{
+                // 插入,这里是重新更新“我的借阅”界面
+                borrow();
+            }
         },
         dataType:"json",
         error:function () {
-            console.log("提交借阅申请失败");
+            console.log("ajax提交借阅申请失败");
         }
     });
     $(".confirm-close").click();
@@ -281,7 +281,7 @@ function borrow() {
                             "<td>"+borrowBooks.data[i].genre+"</td>\n" +
                             "<td>"+borrowBooks.data[i].borrowDate+"</td>\n" +
                             "<td>"+borrowBooks.data[i].returnDate+"</td>\n" +
-                            "<td>"+status[i].status+"</td>\n" +
+                            "<td class='tag'>"+status[i].status+"</td>\n" +
                             "</tr>"
                         );
                     }else{
@@ -293,7 +293,7 @@ function borrow() {
                             "<td>"+borrowBooks.data[i].genre+"</td>\n" +
                             "<td>"+borrowBooks.data[i].borrowDate+"</td>\n" +
                             "<td>"+borrowBooks.data[i].returnDate+"</td>\n" +
-                            "<td><a data-toggle=\"modal\" data-target=\"#delay-return\" onclick=delay_return(this)>"+status[i].status+"</a></td>\n" +
+                            "<td><a class='tag' data-toggle=\"modal\" data-target=\"#delay-return\" onclick=delay_return(this)>"+status[i].status+"</a></td>\n" +
                             "</tr>"
                         );
                     }
@@ -326,29 +326,26 @@ function lock() {
     var user = $(".luser").val(),
         password = $(".lword").val();
     // 管理员帐号密码去数据库查询
-    // $.ajax({
-    //     url:"",
-    //     data:{"user":user,"password":password},
-    //     type:"post",
-    //     success:function (data) {
-    //         console.log(data.message);
-    //         $(".lock").prop("class","lock hide");
-    //         $(".manage-row").prop("class","manage-row row");
-    //         manage_books();
-    //     },
-    //     dataType:"json"
-    // });
-
-    if($(".luser").val() === "mzp520" && $(".lword").val() === "mzp520"){
-        $(".lock").prop("class","lock hide");
-        $(".manage-row").prop("class","manage-row row");
-    }
+    $.ajax({
+        url:"./ManageAdminServlet",
+        data:{"user":user,"password":password},
+        type:"post",
+        success:function (data) {
+            console.log(data.message);
+            if(data.data === "1"){
+                 $(".lock").prop("class","lock hide");
+                 $(".manage-row").prop("class","manage-row row");
+                 manage_books();
+             }
+        },
+        dataType:"json"
+    });
 }
 
 // 3.3  请求图书馆中 book 的书,status 不为 -1 的都行
 function manage_books() {
     $.ajax({
-        url:"",
+        url:"./ManageBooksServlet",
         data:{},
         type:"post",
         success:function (data) {
@@ -358,32 +355,7 @@ function manage_books() {
         },
         dataType:"json",
         error:function () {
-            $("#manage-table").html(
-                "<tr>\n" +
-                "<th class=\"text-align\">序号</th>\n" +
-                "<th class=\"text-align\">书名</th>\n" +
-                "<th class=\"text-align\">作者</th>\n" +
-                "<th class=\"text-align\">类别</th>\n" +
-                "<th class=\"text-align\">出版日期</th>\n" +
-                "<th class=\"text-align\">上传日期</th>\n" +
-                "<th class=\"text-align\">提供人</th>\n" +
-                "<th class=\"text-align\"></th>\n" +
-                "<th class=\"text-align\"></th>\n" +
-                "</tr>"
-            );
-            $("#manage-table").append(
-                "<tr>\n" +
-                "<td>1</td>\n" +
-                "<td>爱情步在啊实打实的撒</td>\n" +
-                " <td>马志鹏</td>\n" +
-                "<td>科幻</td>\n" +
-                "<td>2020-8-30</td>\n" +
-                "<td>2020-8-30</td>\n" +
-                "<td>马志鹏</td>\n" +
-                "<td><button class=\"btn btn-info mana-op\">修改</button></td>\n" +
-                "<td><button class=\"btn btn-danger mana-op\">删除</button></td>\n" +
-                "</tr>"
-            );
+           console.log("ajax请求书籍失败");
         }
     });
 }
@@ -391,95 +363,119 @@ function manage_books() {
 // 3.4  添加、展示表格数据
 function show_manage_books() {
     $("#manage-table").html(
-        "<tr>\n" +
-        "<th class=\"text-align\">序号</th>\n" +
+        "<tobdy><tr>\n" +
+        "<th class=\"text-align\">书号</th>\n" +
         "<th class=\"text-align\">书名</th>\n" +
         "<th class=\"text-align\">作者</th>\n" +
         "<th class=\"text-align\">类别</th>\n" +
         "<th class=\"text-align\">出版日期</th>\n" +
         "<th class=\"text-align\">上传日期</th>\n" +
         "<th class=\"text-align\">提供人</th>\n" +
-        "<th class=\"text-align\"></th>\n" +
-        "<th class=\"text-align\"></th>\n" +
-        "</tr>"
-    );
-    $("#manage-table").append(
-        "<tr>\n" +
-        "<td>1</td>\n" +
-        "<td></td>\n" +
-        "<td></td>\n" +
-        "<td></td>\n" +
-        "<td></td>\n" +
-        "<td></td>\n" +
-        "<td></td>\n" +
-        "<td><button class=\"btn btn-info mana-op\" onclick=modify()>修改</button></td>\n" +
-        "<td><button class=\"btn btn-danger mana-op\" onclick=del()>删除</button></td>\n" +
+        "<th class=\"text-align\">状态量</th>\n" +
+        "<th class=\"text-align\">修改信息</th>\n" +
+        "<th class=\"text-align\">删除数据</th>\n" +
         "</tr>"
     );
     for (var i = 0; i < manageBooks.data.length; i++) {
         $("#manage-table").append(
             "<tr>\n" +
-            "<td>"+(i+1)+"</td>\n" +
+            "<td>"+manageBooks.data[i].bookId+"</td>\n" +
             "<td>"+manageBooks.data[i].bookName+"</td>\n" +
             "<td>"+manageBooks.data[i].author+"</td>\n" +
             "<td>"+manageBooks.data[i].genre+"</td>\n" +
             "<td>"+manageBooks.data[i].publish+"</td>\n" +
             "<td>"+manageBooks.data[i].uploadDate+"</td>\n" +
             "<td>"+manageBooks.data[i].provider+"</td>\n" +
-            "<td><button class=\"btn btn-info mana-op\" onclick=modify()>修改</button></td>\n" +
-            "<td><button class=\"btn btn-danger mana-op\" onclick=del()>删除</button></td>\n" +
+            "<td>"+manageBooks.data[i].status+"</td>\n" +
+            "<td><a class='btn btn-info mana-op' data-toggle=\"modal\" data-target=\"#modify\" onclick=modify(this)>修改</a></td>\n" +
+            "<td><button class=\"btn btn-danger mana-op\" onclick=del(this)>删除</button></td>\n" +
             "</tr>"
         );
     }
 }
-// 3.4.1 修改记录
-function modify() {
+// 3.4.1 为modal添加数据
+function modify(obj) {
+    console.log($(obj).parent().parent().children(":eq(0)").html());  // 定位表格
+    var bookId = $(obj).parent().parent().children(":eq(0)").html(),
+        bookName = $(obj).parent().parent().children(":eq(1)").html(),
+        author = $(obj).parent().parent().children(":eq(2)").html(),
+        genre = $(obj).parent().parent().children(":eq(3)").html(),
+        publish = $(obj).parent().parent().children(":eq(4)").html(),
+        uploadDate = $(obj).parent().parent().children(":eq(5)").html(),
+        provider = $(obj).parent().parent().children(":eq(6)").html(),
+        status = $(obj).parent().parent().children(":eq(7)").html();
 
+    $(".bookId").html(bookId);
+    $(".bookName").val(bookName);
+    $(".author").val(author);
+    $(".genre").val(genre);
+    $(".uploadDate").val(uploadDate);
+    $(".publish").val(publish);
+    $(".provider").html(provider);
+    $(".status").html(status);
+}
+// 3.4.3 确认修改
+function confirmModify() {
+    var MbookName = $(".bookName").val(),
+        Mauthor = $(".author").val(),
+        Mgenre = $(".genre").val(),
+        MuploadDate = $(".uploadDate").val(),
+        Mpublish = $(".publish").val(),
+        bookId =  $(".bookId").html();
+    console.log(MbookName);
+    console.log(Mauthor);
+    console.log(Mgenre);
+    console.log(MuploadDate);
+    console.log(Mpublish);
+    console.log(bookId);
+    var flag = confirm("确认修改吗？");
+    if(flag){
+        $.ajax({
+            url:"./ManageModifyServlet",
+            data:{"MbookName":MbookName,"Mauthor":Mauthor,"Mgenre":Mgenre,"MuploadDate":MuploadDate,"Mpublish":Mpublish,"bookId":bookId},
+            type:"post",
+            success:function (data) {
+                console.log(data.message);
+                manage_books();
+            },
+            dataType:"json",
+            error:function () {
+                console.log("ajax修改失败");
+            }
+        });
+        $(".modify-close").click();
+    }
 }
 // 3.4.2 删除记录
-function del() {
-
+function del(obj) {
+    var bookId = $(obj).parent().parent().children(":eq(0)").html();
+    console.log(bookId);
+    var flag = confirm("确认删除吗?");
+    if(flag){
+        $.ajax({
+            url:"./ManageDeleteServlet",
+            data:{"bookId":bookId},
+            type:"post",
+            success:function (data) {
+                console.log(data.message);
+            },
+            dataType:"json",
+            error:function () {
+                console.log("ajax删除失败");
+            }
+        });
+    }
 }
 
 // 3.5  请求借阅处理页面展示, borrow表 里 status 为 borrow 的记录
 function req_borrow() {
     $.ajax({
-        url:"",
+        url:"./ManageDealBorrowServlet",
         type:"post",
         success:function (data) {
             console.log(data);
             reqBorrow = data;
-            // $("#req-borrow").html("<tr>\n" +
-            //     "<th class=\"text-align\">书号</th>\n" +
-            //     "<th class=\"text-align\">书名</th>\n" +
-            //     "<th class=\"text-align\">作者</th>\n" +
-            //     "<th class=\"text-align\">提供人</th>\n" +
-            //     "<th class=\"text-align\">借阅人</th>\n" +
-            //     "<th class=\"text-align\">借阅日期</th>\n" +
-            //     "<th class=\"text-align\">归还日期</th>\n" +
-            //     "<th class=\"text-align\"></th>\n" +
-            //     "<th class=\"text-align\"></th>\n" +
-            //     "</tr>");
-            // for (var i = 0; i < reqBorrow.data.length; i++) {
-            //     $("#req-borrow").append(
-            //         "<tr>\n" +
-            //         "<td>"+reqBorrow.data[i].bookId+"</td>\n" +
-            //         "<td>"+reqBorrow.data[i].bookName+"</td>\n" +
-            //         "<td>"+reqBorrow.data[i].author+"</td>\n" +
-            //         "<td>"+reqBorrow.data[i].provider+"</td>\n" +
-            //         "<td>"+reqBorrow.data[i].userName+"</td>\n" +
-            //         "<td>"+reqBorrow.data[i].borrowDate+"</td>\n" +
-            //         "<td>"+reqBorrow.data[i].returnDate+"</td>\n" +
-            //         "<td><button class=\"btn btn-info mana-op\" onclick=pass_borrow(this)>通过</button></td>\n" +
-            //         "<td><button class=\"btn btn-danger mana-op\" onclick=reject_borrow(this)>驳回</button></td>\n" +
-            //         "</tr>"
-            //     );
-            // }
-        },
-        dataType:"json",
-        error:function () {
-            console.log("请求借阅处理失败");
-            $("#req-borrow").html("<tr>\n" +
+            $("#req-borrow").html("<tobdy><tr>\n" +
                 "<th class=\"text-align\">书号</th>\n" +
                 "<th class=\"text-align\">书名</th>\n" +
                 "<th class=\"text-align\">作者</th>\n" +
@@ -487,95 +483,86 @@ function req_borrow() {
                 "<th class=\"text-align\">借阅人</th>\n" +
                 "<th class=\"text-align\">借阅日期</th>\n" +
                 "<th class=\"text-align\">归还日期</th>\n" +
-                "<th class=\"text-align\"></th>\n" +
-                "<th class=\"text-align\"></th>\n" +
+                "<th class=\"text-align\">通过请求</th>\n" +
+                "<th class=\"text-align\">驳回请求</th>\n" +
                 "</tr>");
-            $("#req-borrow").append(
-                "<tr>\n" +
-                "<td>1</td>\n" +
-                "<td></td>\n" +
-                "<td></td>\n" +
-                "<td></td>\n" +
-                "<td>mzp</td>\n" +
-                "<td></td>\n" +
-                "<td></td>\n" +
-                "<td><button class=\"btn btn-info mana-op\" onclick=pass_borrow(this)>通过</button></td>\n" +
-                "<td><button class=\"btn btn-danger mana-op\" onclick=reject_borrow(this)>驳回</button></td>\n" +
-                "</tr>"
-            );
+            if(reqBorrow.data !== null){
+                for (var i = 0; i < reqBorrow.data.length; i++) {
+                    $("#req-borrow").append(
+                        "<tr>\n" +
+                        "<td>"+reqBorrow.data[i].bookId+"</td>\n" +
+                        "<td>"+reqBorrow.data[i].bookName+"</td>\n" +
+                        "<td>"+reqBorrow.data[i].author+"</td>\n" +
+                        "<td>"+reqBorrow.data[i].provider+"</td>\n" +
+                        "<td>"+reqBorrow.data[i].userName+"</td>\n" +
+                        "<td>"+reqBorrow.data[i].borrowDate+"</td>\n" +
+                        "<td>"+reqBorrow.data[i].returnDate+"</td>\n" +
+                        "<td><button class=\"btn btn-info mana-op\" onclick=pass_borrow(this)>通过</button></td>\n" +
+                        "<td><button class=\"btn btn-danger mana-op\" onclick=reject_borrow(this)>驳回</button></td>\n" +
+                        "</tr>"
+                    );
+                }
+            }
+        },
+        dataType:"json",
+        error:function () {
+            console.log("请求借阅处理失败");
         }
     })
 }
-// 3.5.1  通过借阅请求, 将borrow表对应记录的status由 borrow 改为 1
+// 3.5.1  通过借阅请求, 将borrow表对应记录的wstatus由 borrow 改为 1
 function pass_borrow(obj) {
     console.log($(obj).parent().parent().children(":eq(0)").html());
     console.log($(obj).parent().parent().children(":eq(4)").html());
     var bookId = $(obj).parent().parent().children(":eq(0)").html(),
         userName = $(obj).parent().parent().children(":eq(4)").html();
-    $.ajax({
-        url:"",
-        type:"post",
-        data:{"bookId":bookId,"userName":userName},
-        success:function (data) {
-            console.log(data.message);
-        },
-        dataType:"json"
-    })
+    var flag = confirm("是否通过请求？");
+    if(flag){
+        $.ajax({
+            url:"./ManagePassBorrowServlet",
+            type:"post",
+            data:{"bookId":bookId,"userName":userName},
+            success:function (data) {
+                console.log(data);
+                req_borrow();
+            },
+            dataType:"json",
+            error:function () {
+                console.log("ajax请求通过借阅失败")
+            }
+        });
+    }
 }
-// 3.5.2  驳回借阅请求，删除对应borrow表的对应记录
+// 3.5.2  驳回借阅请求，删除对应borrow表的记录
 function reject_borrow(obj) {
     console.log($(obj).parent().parent().children(":eq(0)").html());
     console.log($(obj).parent().parent().children(":eq(4)").html());
     var bookId = $(obj).parent().parent().children(":eq(0)").html(),
         userName = $(obj).parent().parent().children(":eq(4)").html();
-    $.ajax({
-        url:"",
-        type:"post",
-        data:{"bookId":bookId,"userName":userName},
-        success:function (data) {
-            console.log(data.message);
-        },
-        dataType:"json"
-    })
+    var flag = confirm("确认驳回吗?");
+    if(flag){
+        $.ajax({
+            url:"./ManageRejectBorrowServlet",
+            type:"post",
+            data:{"bookId":bookId,"userName":userName},
+            success:function (data) {
+                console.log(data.message);
+                req_borrow();
+            },
+            dataType:"json"
+        })
+    }
 }
 
 // 3.6  请求归还处理页面展示  borrow表 里 status 为 return 的记录
 function req_return() {
     $.ajax({
-        url:"",
+        url:"./ManageDealReturnServlet",
         type:"post",
         success:function (data) {
             console.log(data);
             reqReturn = data;
-            // $("#req-return").html("<tr>\n" +
-            //     "<th class=\"text-align\">书号</th>\n" +
-            //     "<th class=\"text-align\">书名</th>\n" +
-            //     "<th class=\"text-align\">作者</th>\n" +
-            //     "<th class=\"text-align\">提供人</th>\n" +
-            //     "<th class=\"text-align\">借阅人</th>\n" +
-            //     "<th class=\"text-align\">借阅日期</th>\n" +
-            //     "<th class=\"text-align\">归还日期</th>\n" +
-            //     "<th class=\"text-align\"></th>\n" +
-            //     "</tr>");
-            // for (var i = 0; i < reqBorrow.data.length; i++) {
-            //     $("#req-return").append(
-            //         "<tr>\n" +
-            //         "<td>"+reqReturn.data[i].bookId+"</td>\n" +
-            //         "<td>"+reqReturn.data[i].bookName+"</td>\n" +
-            //         "<td>"+reqReturn.data[i].author+"</td>\n" +
-            //         "<td>"+reqReturn.data[i].provider+"</td>\n" +
-            //         "<td>"+reqReturn.data[i].userName+"</td>\n" +
-            //         "<td>"+reqReturn.data[i].borrowDate+"</td>\n" +
-            //         "<td>"+reqReturn.data[i].returnDate+"</td>\n" +
-            //         "<td><button class=\"btn btn-info mana-op\" onclick=pass_return(this)>确认归还</button></td>\n" +
-            //         "</tr>"
-            //     );
-            // }
-        },
-        dataType:"json",
-        error:function () {
-            console.log("请求归还处理失败");
-            $("#req-return").html("<tr>\n" +
+            $("#req-return").html("<tobdy><tr>\n" +
                 "<th class=\"text-align\">书号</th>\n" +
                 "<th class=\"text-align\">书名</th>\n" +
                 "<th class=\"text-align\">作者</th>\n" +
@@ -583,20 +570,28 @@ function req_return() {
                 "<th class=\"text-align\">借阅人</th>\n" +
                 "<th class=\"text-align\">借阅日期</th>\n" +
                 "<th class=\"text-align\">归还日期</th>\n" +
-                "<th class=\"text-align\"></th>\n" +
+                "<th class=\"text-align\">处理</th>\n" +
                 "</tr>");
-            $("#req-return").append(
-                "<tr>\n" +
-                "<td>1</td>\n" +
-                "<td></td>\n" +
-                "<td></td>\n" +
-                "<td></td>\n" +
-                "<td>mdl</td>\n" +
-                "<td></td>\n" +
-                "<td></td>\n" +
-                "<td><button class=\"btn btn-info mana-op\" onclick=pass_return(this)>确认通过</button></td>\n" +
-                "</tr>"
-            );
+            if(reqReturn.data !== null){
+                for (var i = 0; i < reqReturn.data.length; i++) {
+                    $("#req-return").append(
+                        "<tr>\n" +
+                        "<td>"+reqReturn.data[i].bookId+"</td>\n" +
+                        "<td>"+reqReturn.data[i].bookName+"</td>\n" +
+                        "<td>"+reqReturn.data[i].author+"</td>\n" +
+                        "<td>"+reqReturn.data[i].provider+"</td>\n" +
+                        "<td>"+reqReturn.data[i].userName+"</td>\n" +
+                        "<td>"+reqReturn.data[i].borrowDate+"</td>\n" +
+                        "<td>"+reqReturn.data[i].returnDate+"</td>\n" +
+                        "<td><button class=\"btn btn-info mana-op\" onclick=pass_return(this)>确认归还</button></td>\n" +
+                        "</tr>"
+                    );
+                }
+            }
+        },
+        dataType:"json",
+        error:function () {
+            console.log("请求归还处理失败");
         }
     })
 }
@@ -606,58 +601,33 @@ function pass_return(obj) {
     console.log($(obj).parent().parent().children(":eq(4)").html());
     var bookId = $(obj).parent().parent().children(":eq(0)").html(),
         userName = $(obj).parent().parent().children(":eq(4)").html();
-    $.ajax({
-        url:"",
-        type:"post",
-        data:{"bookId":bookId,"userName":userName},
-        success:function (data) {
-            console.log(data.message);
-        },
-        dataType:"json"
-    })
+    var flag = confirm("确认通过吗？");
+    if(flag){
+        $.ajax({
+            url:"./ManagePassReturnServlet",
+            type:"post",
+            data:{"bookId":bookId,"userName":userName},
+            success:function (data) {
+                console.log(data.message);
+                req_return();
+            },
+            dataType:"json",
+            error:function () {
+                console.log("ajax请求归还失败");
+            }
+        })
+    }
 }
 
 // 3.7  请求延期处理页面展示, borrow表 里 request 不为 0 的记录
 function req_delay() {
     $.ajax({
-        url:"",
+        url:"./ManageDealDelayServlet",
         type:"post",
         success:function (data) {
             console.log(data);
             reqDelay = data;
-            // $("#req-delay").html("<tr>\n" +
-            //     "<th class=\"text-align\">书号</th>\n" +
-            //     "<th class=\"text-align\">书名</th>\n" +
-            //     "<th class=\"text-align\">作者</th>\n" +
-            //     "<th class=\"text-align\">提供人</th>\n" +
-            //     "<th class=\"text-align\">借阅人</th>\n" +
-            //     "<th class=\"text-align\">借阅日期</th>\n" +
-            //     "<th class=\"text-align\">归还日期</th>\n" +
-            //     "<th class=\"text-align\">请求延期至</th>" +
-            //     "<th class=\"text-align\"></th>" +
-            //     "<th class=\"text-align\"></th>\n" +
-            //     "</tr>");
-            // for (var i = 0; i < reqDelay.data.length; i++) {
-            //     $("#req-delay").append(
-            //         "<tr>\n" +
-            //         "<td>"+reqDelay.data[i].bookId+"</td>\n" +
-            //         "<td>"+reqDelay.data[i].bookName+"</td>\n" +
-            //         "<td>"+reqDelay.data[i].author+"</td>\n" +
-            //         "<td>"+reqDelay.data[i].provider+"</td>\n" +
-            //         "<td>"+reqDelay.data[i].userName+"</td>\n" +
-            //         "<td>"+reqDelay.data[i].borrowDate+"</td>\n" +
-            //         "<td>"+reqDelay.data[i].returnDate+"</td>\n" +
-            //         "<td>"+""+"</td>\n" +
-            //         "<td><button class=\"btn btn-info mana-op\" onclick=pass_delay(this)>通过</button></td>\n" +
-            //         "<td><button class=\"btn btn-danger mana-op\" onclick=reject_delay(this)>驳回</button></td>\n" +
-            //         "</tr>"
-            //     );
-            // }
-        },
-        dataType:"json",
-        error:function () {
-            console.log("请求延期处理失败");
-            $("#req-delay").html("<tr>\n" +
+            $("#req-delay").html("<tobdy><tr>\n" +
                 "<th class=\"text-align\">书号</th>\n" +
                 "<th class=\"text-align\">书名</th>\n" +
                 "<th class=\"text-align\">作者</th>\n" +
@@ -669,20 +639,28 @@ function req_delay() {
                 "<th class=\"text-align\"></th>" +
                 "<th class=\"text-align\"></th>\n" +
                 "</tr>");
-            $("#req-delay").append(
-                "<tr>\n" +
-                "<td>1</td>\n" +
-                "<td></td>\n" +
-                "<td></td>\n" +
-                "<td></td>\n" +
-                "<td>qb</td>\n" +
-                "<td></td>\n" +
-                "<td></td>\n" +
-                "<td></td>\n" +
-                "<td><button class=\"btn btn-info mana-op\" onclick=pass_delay(this)>通过</button></td>\n" +
-                "<td><button class=\"btn btn-danger mana-op\" onclick=reject_delay(this)>驳回</button></td>\n" +
-                "</tr>"
-            );
+            if(reqDelay.data !== null){
+                for (var i = 0; i < reqDelay.data.length; i++) {
+                    $("#req-delay").append(
+                        "<tr>\n" +
+                        "<td>"+reqDelay.data[i].bookId+"</td>\n" +
+                        "<td>"+reqDelay.data[i].bookName+"</td>\n" +
+                        "<td>"+reqDelay.data[i].author+"</td>\n" +
+                        "<td>"+reqDelay.data[i].provider+"</td>\n" +
+                        "<td>"+reqDelay.data[i].userName+"</td>\n" +
+                        "<td>"+reqDelay.data[i].borrowDate+"</td>\n" +
+                        "<td>"+reqDelay.data[i].returnDate+"</td>\n" +
+                        "<td>"+reqDelay.data[i].request+"</td>\n" +
+                        "<td><button class=\"btn btn-info mana-op\" onclick=pass_delay(this)>通过</button></td>\n" +
+                        "<td><button class=\"btn btn-danger mana-op\" onclick=reject_delay(this)>驳回</button></td>\n" +
+                        "</tr>"
+                    );
+                }
+            }
+        },
+        dataType:"json",
+        error:function () {
+            console.log("请求延期处理失败");
         }
     })
 }
@@ -690,119 +668,131 @@ function req_delay() {
 function pass_delay(obj) {
     console.log($(obj).parent().parent().children(":eq(0)").html());
     console.log($(obj).parent().parent().children(":eq(4)").html());
+    console.log($(obj).parent().parent().children(":eq(7)").html());
     var bookId = $(obj).parent().parent().children(":eq(0)").html(),
-        userName = $(obj).parent().parent().children(":eq(4)").html();
-    $.ajax({
-        url:"",
-        type:"post",
-        data:{"bookId":bookId,"userName":userName},
-        success:function (data) {
-            console.log(data.message);
-        },
-        dataType:"json"
-    })
+        userName = $(obj).parent().parent().children(":eq(4)").html(),
+        newReturnDate = $(obj).parent().parent().children(":eq(7)").html(),
+        flag = confirm("确认通过吗？");
+    if(flag){
+        $.ajax({
+            url:"./ManagePassDelayServlet",
+            type:"post",
+            data:{"bookId":bookId,"userName":userName,"newReturnDate":newReturnDate},
+            success:function (data) {
+                console.log(data);
+                req_delay();
+            },
+            dataType:"json",
+            error:function () {
+                console.log("ajax通过延期处理失败");
+            }
+        })
+    }
 }
 // 3.7.2  驳回延期申请 ， borrow表 里 requset 重新改为0 （需要通知用户么？）
 function reject_delay(obj) {
     console.log($(obj).parent().parent().children(":eq(0)").html());
     console.log($(obj).parent().parent().children(":eq(4)").html());
     var bookId = $(obj).parent().parent().children(":eq(0)").html(),
-        userName = $(obj).parent().parent().children(":eq(4)").html();
-    $.ajax({
-        url:"",
-        type:"post",
-        data:{"bookId":bookId,"userName":userName},
-        success:function (data) {
-            console.log(data.message);
-        },
-        dataType:"json"
-    })
+        userName = $(obj).parent().parent().children(":eq(4)").html(),
+        flag = confirm("确认驳回吗？");
+    if(flag){
+        $.ajax({
+            url:"./ManageRejectDelayServlet",
+            type:"post",
+            data:{"bookId":bookId,"userName":userName},
+            success:function (data) {
+                console.log(data);
+                req_delay();
+            },
+            dataType:"json",
+            error:function () {
+                console.log("ajax驳回延期处理失败");
+            }
+        })
+    }
 }
 
 // 3.8  请求上传处理页面展示 ， book 表 status 为 -1 的记录
 function req_upload() {
     $.ajax({
-        url:"",
+        url:"./ManageDealUploadServlet",
         type:"post",
         success:function (data) {
             console.log(data);
             reqUpload = data;
-            // $("#req-upload").html("<tr>\n" +
-            //     "<th class=\"text-align\">书名</th>\n" +
-            //     "<th class=\"text-align\">作者</th>\n" +
-            //     "<th class=\"text-align\">提供人</th>\n" +
-            //     "<th class=\"text-align\">上传日期</th>\n" +
-            //     "<th class=\"text-align\"></th>" +
-            //     "<th class=\"text-align\"></th>\n" +
-            //     "</tr>");
-            // for (var i = 0; i < reqUpload.data.length; i++) {
-            //     $("#req-upload").append(
-            //         "<tr>\n" +
-            //         "<td>"+reqUpload.data[i].bookName+"</td>\n" +
-            //         "<td>"+reqUpload.data[i].author+"</td>\n" +
-            //         "<td>"+reqUpload.data[i].provider+"</td>\n" +
-            //         "<td>"+reqUpload.data[i].uploadDate+"</td>\n" +
-            //         "<td><button class=\"btn btn-info mana-op\" onclick=pass_delay(this)>通过</button></td>\n" +
-            //         "<td><button class=\"btn btn-danger mana-op\" onclick=reject_delay(this)>驳回</button></td>\n" +
-            //         "</tr>"
-            //     );
-            // }
-        },
-        dataType:"json",
-        error:function () {
-            console.log("请求上传处理失败");
-            $("#req-upload").html("<tr>\n" +
+            $("#req-upload").html("<tbody><tr>\n" +
+                "<th class=\"text-align\">书号</th>\n" +
                 "<th class=\"text-align\">书名</th>\n" +
                 "<th class=\"text-align\">作者</th>\n" +
                 "<th class=\"text-align\">提供人</th>\n" +
                 "<th class=\"text-align\">上传日期</th>\n" +
-                "<th class=\"text-align\"></th>" +
-                "<th class=\"text-align\"></th>\n" +
+                "<th class=\"text-align\">通过分享</th>" +
+                "<th class=\"text-align\">驳回分享</th>\n" +
                 "</tr>");
-            $("#req-upload").append(
-                "<tr>\n" +
-                "<td>爱</td>\n" +
-                "<td></td>\n" +
-                "<td>lqs</td>\n" +
-                "<td></td>\n" +
-                "<td><button class=\"btn btn-info mana-op\" onclick=pass_upload(this)>通过</button></td>\n" +
-                "<td><button class=\"btn btn-danger mana-op\" onclick=reject_upload(this)>驳回</button></td>\n" +
-                "</tr>"
-            );
+            if(reqUpload.data !== null) {
+                for (var i = 0; i < reqUpload.data.length; i++) {
+                    $("#req-upload").append(
+                        "<tr>\n" +
+                        "<td>"+reqUpload.data[i].bookId+"</td>\n" +
+                        "<td>"+reqUpload.data[i].bookName+"</td>\n" +
+                        "<td>"+reqUpload.data[i].author+"</td>\n" +
+                        "<td>"+reqUpload.data[i].provider+"</td>\n" +
+                        "<td>"+reqUpload.data[i].uploadDate+"</td>\n" +
+                        "<td><button class=\"btn btn-info mana-op\" onclick=pass_upload(this)>通过</button></td>\n" +
+                        "<td><button class=\"btn btn-danger mana-op\" onclick=reject_upload(this)>驳回</button></td>\n" +
+                        "</tr>"
+                    );
+                }
+            }
+        },
+        dataType:"json",
+        error:function () {
+            console.log("ajax请求上传处理失败");
         }
     })
 }
 // 3.8.1 通过上传请求
 function pass_upload(obj) {
     console.log($(obj).parent().parent().children(":eq(0)").html());
-    console.log($(obj).parent().parent().children(":eq(2)").html());
-    var bookName = $(obj).parent().parent().children(":eq(0)").html(),
-        provider = $(obj).parent().parent().children(":eq(2)").html();
-    $.ajax({
-        url:"",
-        type:"post",
-        data:{"bookName":bookName,"provider":provider},
-        success:function (data) {
-            console.log(data.message);
-        },
-        dataType:"json"
-    })
+    var bookId = $(obj).parent().parent().children(":eq(0)").html(),
+        flag = confirm("确认通过吗？");
+    if(flag){
+        $.ajax({
+            url:"./ManagePassUploadServlet",
+            type:"post",
+            data:{"bookId":bookId},
+            success:function (data) {
+                console.log(data);
+                req_upload();
+            },
+            dataType:"json",
+            error:function () {
+                console.log("ajax通过上传失败");
+            }
+        })
+    }
 }
 // 3.8.2 驳回上传请求
 function reject_upload(obj) {
     console.log($(obj).parent().parent().children(":eq(0)").html());
-    console.log($(obj).parent().parent().children(":eq(2)").html());
-    var bookName = $(obj).parent().parent().children(":eq(0)").html(),
-        provider = $(obj).parent().parent().children(":eq(2)").html();
-    $.ajax({
-        url:"",
-        type:"post",
-        data:{"bookName":bookName,"provider":provider},
-        success:function (data) {
-            console.log(data.message);
-        },
-        dataType:"json"
-    })
+    var bookId = $(obj).parent().parent().children(":eq(0)").html(),
+        flag = confirm("确认驳回吗？");
+    if(flag){
+        $.ajax({
+            url:"./ManageRejectUploadServlet",
+            type:"post",
+            data:{"bookId":bookId},
+            success:function (data) {
+                console.log(data);
+                req_upload();
+            },
+            dataType:"json",
+            error:function () {
+                console.log("ajax驳回上传失败");
+            }
+        })
+    }
 }
 
 /**

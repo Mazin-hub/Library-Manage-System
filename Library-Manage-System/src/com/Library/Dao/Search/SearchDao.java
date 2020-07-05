@@ -49,7 +49,7 @@ public class SearchDao {
 
         StringBuilder sb = new StringBuilder(sql);
         for(book book : books){
-            // 1. 先查询 bookNum 表中是否有对应元组 ; 有则直接 拿出 ，无则查询book 再插入
+            // 1. 先查询 bookNum 表中是否有对应元组 ; 1有则直接 拿出 ，0无则查询book 再插入
             Long count = template.queryForObject(countSql,Long.class, book.getBookName());
             // 2. 查出现在最新的状态，更新记录 ？
             // 2.1 排除掉正在上传的书籍，得到总库存

@@ -1,6 +1,7 @@
 package com.Library.Test;
 
 import com.Library.Utils.JDBCUtils;
+import com.Library.domain.BorrowInformation;
 import com.Library.domain.MyBooks;
 import com.Library.domain.book;
 import com.Library.domain.bookNum;
@@ -17,6 +18,8 @@ import java.util.Map;
 
 public class JDBC {
     JdbcTemplate template = new JdbcTemplate(JDBCUtils.getDataSource());
+    ObjectMapper objectMapper = new ObjectMapper();
+
     @Test
     public void test1(){
         String sql = "update book set status = 0 where bookId = 1";
@@ -98,5 +101,37 @@ public class JDBC {
 //        System.out.println(json);
     }
 
+    @Test
+    public void test8(){
+        String sql = "SELECT EXISTS( SELECT * FROM USER WHERE userName = ? and password = ?)";
+        Long count = template.queryForObject(sql, Long.class,"马志鹏","000");
+        System.out.println(count);
+    }
 
+    @Test
+    public void test9() throws JsonProcessingException {
+        String sql = "select book.bookId,bookName,author,provider,userName,borrowDate,returnDate from borrow,book where book.bookId = borrow.bookId and wstatus = 'borrow'";
+        List<BorrowInformation> lists = template.query(sql, new BeanPropertyRowMapper<>(BorrowInformation.class));
+        String json = objectMapper.writeValueAsString(lists);
+        System.out.println(json);
+    }
+
+    @Test
+    public void test10() {
+        String sql = "update book set bookName = ?,set author = ?,genre = ?,publish = ?,uploadDate = ? where bookId = ?";
+        int count = template.update(sql, "器", "test", "科幻", "2020-2-25", "2020-4-25", 2);
+        System.out.println(count);
+    }
+
+    @Test
+    public void test11() {
+        String sql = "update borrow set wstatus = ? where bookId = ? and userName = ? and wstatus = ?";
+        int count1 = template.update(sql,  "1", 5, "马志鹏","borrow");
+        String sql2 = "update book set status = ? where bookId = ?";
+        int count2 = template.update(sql2,"0", 5);
+        System.out.println(count1);
+        System.out.println(count2);
+        int count = (count1 == 1 && count2 == 1) ? 1 : 0;
+        System.out.println(count);
+    }
 }

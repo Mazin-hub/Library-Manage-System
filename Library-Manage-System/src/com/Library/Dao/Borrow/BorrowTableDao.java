@@ -12,8 +12,9 @@ public class BorrowTableDao {
     JdbcTemplate template = new JdbcTemplate(JDBCUtils.getDataSource());
 
     public List<BorrowInformation> getBorrowTableInformation(){
-        String sql = "select * from book,borrow where book.bookId = borrow.bookId";
-        List<BorrowInformation> lists = template.query(sql, new BeanPropertyRowMapper<>(BorrowInformation.class));
+        // 根据后台 session 的 userName 查，这里测试用 “马志鹏”
+        String sql = "select * from book,borrow where book.bookId = borrow.bookId and userName = ?";
+        List<BorrowInformation> lists = template.query(sql, new BeanPropertyRowMapper<>(BorrowInformation.class),"马志鹏");
         String sql2 = "select * from bookNum where bookName = ?";
         for(BorrowInformation list : lists){
             bookNum bookNum = template.queryForObject(sql2, new BeanPropertyRowMapper<>(bookNum.class), list.getBookName());

@@ -23,10 +23,10 @@
     <!-- Nav tabs -->
     <ul class="nav nav-tabs ul-background" role="tablist">
         <li role="presentation" class="active li-length text-align"><a class="li-font" href="#search" role="tab" data-toggle="tab">📕图书检索</a></li>
-        <li role="presentation" class="li-length text-align"><a class="li-font" href="#borrow" role="tab" data-toggle="tab">📄我的借阅</a></li>
+        <li role="presentation" class="li-length text-align"><a class="li-font" href="#borrow" role="tab" data-toggle="tab" onclick=borrow()>📄我的借阅</a></li>
         <!--管理员的页面点击后应该是到锁，这里为了测试方便修改了-->
         <li role="presentation" class="li-length text-align"><a class="li-font" href="#manage" role="tab" data-toggle="tab" onclick=manage_books()>🔑图书管理</a></li>
-        <li role="presentation" class="li-length text-align"><a class="li-font" href="#MyBook" role="tab" data-toggle="tab">🙎‍♂️‍我的图书</a></li>
+        <li role="presentation" class="li-length text-align"><a class="li-font" href="#MyBook" role="tab" data-toggle="tab" onclick=Mybooks()>🙎‍♂️‍我的图书</a></li>
         <li role="presentation" class="li-length text-align"><a class="li-font" href="#contact" role="tab" data-toggle="tab">📞联系管理员</a></li>
     </ul>
 
@@ -110,7 +110,7 @@
         </div>
 
         <div role="tabpanel" class="tab-pane" id="borrow">
-            <div class="alert alert-warning red-font juli">请注意书籍归还日期，截止归还日期未归还书籍将被划入黑名单!</div>
+            <div class="alert alert-warning red-font juli">请注意书籍归还日期，截止归还日期未归还书籍将被划入黑名单!&emsp;(借阅数据如果消失是被管理员拒绝.)</div>
             <div class="juli">
                 <!--默认隐藏-->
                 <table id="borrow-table" border="1" class="table table-bordered table-hover text-align hide">
@@ -157,7 +157,7 @@
                 </div>
             </div>
             <!--真实管理界面 , 靠 li-manage 、solid 、col-lg-1 控制 -->
-            <div class="manage-row row">
+            <div class="manage-row row ">
                 <div class="col-lg-2  mana-list">
                     <ul class="nav nav-tabs" role="tablist">
                         <li class="li-manage"><a class="list-color" href="#books-deal" role="tab" data-toggle="tab" onclick=show_manage_books()>图书增删改</a></li>
@@ -165,7 +165,7 @@
                         <li class="li-manage"><a class="list-color" href="#return-deal" role="tab" data-toggle="tab" onclick=req_return()>归还处理</a></li>
                         <li class="li-manage"><a class="list-color" href="#delay-deal" role="tab" data-toggle="tab" onclick=req_delay()>延期归还处理</a></li>
                         <li class="li-manage"><a class="list-color" href="#upload-deal" role="tab" data-toggle="tab" onclick=req_upload()>图书上传处理</a></li>
-                        <li class="li-manage"><a class="list-color" href="#information-deal" role="tab" data-toggle="tab">消息处理</a></li>
+                        <li class="li-manage"><a class="list-color hide" href="#information-deal" role="tab" data-toggle="tab">消息处理</a></li>
                     </ul>
                 </div>
 
@@ -188,7 +188,6 @@
                         </div>
 
                         <div role="tabpanel" class="tab-pane" id="borrow-deal">
-                            借阅处理
                             <table id="req-borrow" border="1" class="table table-bordered table-hover text-align">
                                 <tr>
                                     <th class="text-align">书号</th>
@@ -205,7 +204,6 @@
                         </div>
 
                         <div role="tabpanel" class="tab-pane" id="return-deal">
-                            归还处理
                             <table id="req-return" border="1" class="table table-bordered table-hover text-align">
                                 <tr>
                                     <th class="text-align">书号</th>
@@ -221,7 +219,6 @@
                         </div>
 
                         <div role="tabpanel" class="tab-pane" id="delay-deal">
-                            延迟处理
                             <table id="req-delay" border="1" class="table table-bordered table-hover text-align">
                                 <tr>
                                     <th class="text-align">书号</th>
@@ -239,7 +236,6 @@
                         </div>
 
                         <div role="tabpanel" class="tab-pane" id="upload-deal">
-                            上传图书处理
                             <table id="req-upload" border="1" class="table table-bordered table-hover text-align">
                                 <tr>
                                     <th class="text-align">书名</th>
@@ -443,6 +439,32 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-primary" onclick=back()>请求紧急撤回书籍</button>
                     <button type="button" class="btn btn-default upload-close" data-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. modify-Modal 管理员页面-->
+    <div class="modal fade" id="modify" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">status表示状态量，-1是正在上传，需要审核；0是被借；1是未被借</h4>
+                </div>
+                <div class="modal-body modify">
+                    <label>书号：</label><span class="bookId mana-modify-font"></span><br>
+                    <label>书名：</label><input class="bookName form-control" type="text"><br>
+                    <label>作者：</label><input class="author form-control" type="text"><br>
+                    <label>类别：</label><input class="genre form-control" type="text"><br>
+                    <label>出版日期：</label><input class="publish form-control" type="text" placeholder="日期请按照YYYY-MM-DD输入"><br>
+                    <label>上传日期：</label><input class="uploadDate form-control" type="text" placeholder="日期请按照YYYY-MM-DD输入"><br>
+                    <label>提供人：</label><span class="provider mana-modify-font">马志鹏</span><br>
+                    <label>状态量：</label><span class="status mana-modify-font"></span><br>
+                </div>   <!-- modal-body -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onclick=confirmModify()>确认修改</button>
+                    <button type="button" class="btn btn-default modify-close" data-dismiss="modal">关闭</button>
                 </div>
             </div>
         </div>
